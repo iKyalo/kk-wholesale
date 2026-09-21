@@ -1,0 +1,480 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="bg-light min-vh-100 py-4">
+<div class="container-fluid px-3 px-md-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-0">Create Sale</h1>
+            <p class="text-muted small mb-0">Add products and complete a new sale.</p>
+        </div>
+        <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary">
+            Back to Sales
+        </a>
+    </div>
+
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            Please fix the errors below and try again.
+        </div>
+    @endif
+
+    <form
+        id="saleForm"
+        method="POST"
+        action="{{ route('sales.store') }}"
+        novalidate
+    >
+        @csrf
+
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+
+                {{-- Sale Information --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 class="h6 fw-bold mb-0">Sale Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="branch_id" class="form-label">Branch</label>
+                                <select
+                                    class="form-select @error('branch_id') is-invalid @enderror"
+                                    id="branch_id"
+                                    name="branch_id"
+                                    required
+                                >
+                                    <option value="" disabled {{ old('branch_id') ? '' : 'selected' }}>Select a branch</option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}" {{ (string) old('branch_id') === (string) $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('branch_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="store_id" class="form-label">Store</label>
+                                <select
+                                    class="form-select @error('store_id') is-invalid @enderror"
+                                    id="store_id"
+                                    name="store_id"
+                                    required
+                                >
+                                    <option value="" disabled {{ old('store_id') ? '' : 'selected' }}>Select a store</option>
+                                    @foreach ($stores as $store)
+                                        <option value="{{ $store->id }}" {{ (string) old('store_id') === (string) $store->id ? 'selected' : '' }}>
+                                            {{ $store->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('store_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customer_name" class="form-label">Customer Name <span class="text-muted fw-normal">(optional)</span></label>
+                                <input
+                                    type="text"
+                                    class="form-control @error('customer_name') is-invalid @enderror"
+                                    id="customer_name"
+                                    name="customer_name"
+                                    value="{{ old('customer_name') }}"
+                                    placeholder="Walk-in customer"
+                                >
+                                @error('customer_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customer_phone" class="form-label">Customer Phone <span class="text-muted fw-normal">(optional)</span></label>
+                                <input
+                                    type="tel"
+                                    class="form-control @error('customer_phone') is-invalid @enderror"
+                                    id="customer_phone"
+                                    name="customer_phone"
+                                    value="{{ old('customer_phone') }}"
+                                    placeholder="+254 700 000000"
+                                >
+                                @error('customer_phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="payment_method" class="form-label">Payment Method</label>
+                                <select
+                                    class="form-select @error('payment_method') is-invalid @enderror"
+                                    id="payment_method"
+                                    name="payment_method"
+                                    required
+                                >
+                                    <option value="cash" {{ old('payment_method') === 'cash' ? 'selected' : '' }}>Cash</option>
+                                    <option value="mpesa" {{ old('payment_method') === 'mpesa' ? 'selected' : '' }}>M-Pesa</option>
+                                    <option value="card" {{ old('payment_method') === 'card' ? 'selected' : '' }}>Card</option>
+                                    <option value="bank_transfer" {{ old('payment_method') === 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                </select>
+                                @error('payment_method')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="sale_date" class="form-label">Sale Date</label>
+                                <input
+                                    type="datetime-local"
+                                    class="form-control @error('sale_date') is-invalid @enderror"
+                                    id="sale_date"
+                                    name="sale_date"
+                                    value="{{ old('sale_date', now()->format('Y-m-d\TH:i')) }}"
+                                    required
+                                >
+                                @error('sale_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Product Selection --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 class="h6 fw-bold mb-0">Add Products</h2>
+                    </div>
+                    <div class="card-body">
+                        <input
+                            type="text"
+                            id="productSearchInput"
+                            class="form-control mb-3"
+                            placeholder="Search products by name or SKU..."
+                        >
+
+                        <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0" id="productCatalogTable">
+                                <thead>
+                                    <tr class="text-muted small text-uppercase">
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Available Stock</th>
+                                        <th style="width: 90px;">Qty</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($products as $product)
+                                        <tr
+                                            class="product-row"
+                                            data-id="{{ $product->id }}"
+                                            data-name="{{ $product->name }}"
+                                            data-sku="{{ $product->sku }}"
+                                            data-price="{{ $product->selling_price }}"
+                                            data-stock="{{ $product->available_stock ?? 0 }}"
+                                        >
+                                            <td class="product-name fw-semibold">{{ $product->name }}</td>
+                                            <td class="product-sku">{{ $product->sku }}</td>
+                                            <td class="text-end">KSh {{ number_format($product->selling_price, 2) }}</td>
+                                            <td class="text-end">{{ number_format($product->available_stock ?? 0) }}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    class="form-control form-control-sm product-qty-input"
+                                                    min="1"
+                                                    max="{{ $product->available_stock ?? 0 }}"
+                                                    value="1"
+                                                >
+                                            </td>
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary add-item-btn"
+                                                    {{ ($product->available_stock ?? 0) <= 0 ? 'disabled' : '' }}
+                                                >
+                                                    Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">No products available.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Sale Items --}}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 class="h6 fw-bold mb-0">Sale Items</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="saleItemsHiddenInputs"></div>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted small text-uppercase">
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th style="width: 90px;">Quantity</th>
+                                        <th style="width: 110px;">Discount</th>
+                                        <th class="text-end">Line Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="saleItemsTableBody">
+                                    <tr id="noItemsRow">
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            No items added yet. Use "Add Products" above to build this sale.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- Payment Summary --}}
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm" style="position: sticky; top: 1rem;">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 class="h6 fw-bold mb-0">Payment Summary</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span id="summarySubtotal" class="fw-semibold">KSh 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Discount</span>
+                            <span id="summaryDiscount" class="fw-semibold">KSh 0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="fw-bold">Total Amount</span>
+                            <span id="summaryTotal" class="fw-bold fs-5">KSh 0.00</span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary py-2">Complete Sale</button>
+                            <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let items = [];
+    let nextRowId = 1;
+
+    const catalogRows = document.querySelectorAll('.product-row');
+    const itemsBody = document.getElementById('saleItemsTableBody');
+    const hiddenInputsContainer = document.getElementById('saleItemsHiddenInputs');
+    const noItemsRow = document.getElementById('noItemsRow');
+    const productSearchInput = document.getElementById('productSearchInput');
+    const saleForm = document.getElementById('saleForm');
+
+    function formatMoney(amount) {
+        return 'KSh ' + Number(amount || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateLineTotal(item) {
+        const total = (item.unitPrice * item.quantity) - item.discount;
+        return total > 0 ? total : 0;
+    }
+
+    function render() {
+        itemsBody.innerHTML = '';
+        hiddenInputsContainer.innerHTML = '';
+
+        if (items.length === 0) {
+            itemsBody.appendChild(noItemsRow);
+        } else {
+            items.forEach(function (item, index) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="fw-semibold">${item.name}</td>
+                    <td>${item.sku}</td>
+                    <td class="text-end">${formatMoney(item.unitPrice)}</td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm item-qty-input" min="1" max="${item.stock}" value="${item.quantity}" data-row-id="${item.rowId}">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm item-discount-input" min="0" step="0.01" value="${item.discount}" data-row-id="${item.rowId}">
+                    </td>
+                    <td class="text-end fw-semibold">${formatMoney(calculateLineTotal(item))}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn" data-row-id="${item.rowId}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                `;
+                itemsBody.appendChild(row);
+
+                ['product_id', 'quantity', 'unit_price', 'discount'].forEach(function (field) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `items[${index}][${field}]`;
+                    input.value = field === 'product_id' ? item.productId
+                        : field === 'quantity' ? item.quantity
+                        : field === 'unit_price' ? item.unitPrice
+                        : item.discount;
+                    hiddenInputsContainer.appendChild(input);
+                });
+            });
+        }
+
+        updateSummary();
+        bindItemRowEvents();
+    }
+
+    function updateSummary() {
+        let subtotal = 0;
+        let discount = 0;
+
+        items.forEach(function (item) {
+            subtotal += item.unitPrice * item.quantity;
+            discount += Number(item.discount || 0);
+        });
+
+        const total = subtotal - discount > 0 ? subtotal - discount : 0;
+
+        document.getElementById('summarySubtotal').textContent = formatMoney(subtotal);
+        document.getElementById('summaryDiscount').textContent = formatMoney(discount);
+        document.getElementById('summaryTotal').textContent = formatMoney(total);
+    }
+
+    function bindItemRowEvents() {
+        document.querySelectorAll('.item-qty-input').forEach(function (input) {
+            input.addEventListener('change', function () {
+                const rowId = Number(input.dataset.rowId);
+                const item = items.find(function (i) { return i.rowId === rowId; });
+                if (!item) return;
+
+                let qty = parseInt(input.value, 10) || 1;
+                if (qty > item.stock) {
+                    qty = item.stock;
+                }
+                if (qty < 1) {
+                    qty = 1;
+                }
+                item.quantity = qty;
+                render();
+            });
+        });
+
+        document.querySelectorAll('.item-discount-input').forEach(function (input) {
+            input.addEventListener('change', function () {
+                const rowId = Number(input.dataset.rowId);
+                const item = items.find(function (i) { return i.rowId === rowId; });
+                if (!item) return;
+
+                let discount = parseFloat(input.value) || 0;
+                const maxDiscount = item.unitPrice * item.quantity;
+                if (discount > maxDiscount) {
+                    discount = maxDiscount;
+                }
+                if (discount < 0) {
+                    discount = 0;
+                }
+                item.discount = discount;
+                render();
+            });
+        });
+
+        document.querySelectorAll('.remove-item-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const rowId = Number(button.dataset.rowId);
+                items = items.filter(function (i) { return i.rowId !== rowId; });
+                render();
+            });
+        });
+    }
+
+    catalogRows.forEach(function (row) {
+        const addButton = row.querySelector('.add-item-btn');
+        if (!addButton) return;
+
+        addButton.addEventListener('click', function () {
+            const stock = parseInt(row.dataset.stock, 10) || 0;
+            const qtyInput = row.querySelector('.product-qty-input');
+            let qty = parseInt(qtyInput.value, 10) || 1;
+
+            if (stock <= 0) {
+                return;
+            }
+            if (qty > stock) {
+                qty = stock;
+            }
+            if (qty < 1) {
+                qty = 1;
+            }
+
+            const productId = row.dataset.id;
+            const existing = items.find(function (i) { return i.productId === productId; });
+
+            if (existing) {
+                existing.quantity = Math.min(existing.quantity + qty, stock);
+            } else {
+                items.push({
+                    rowId: nextRowId++,
+                    productId: productId,
+                    name: row.dataset.name,
+                    sku: row.dataset.sku,
+                    unitPrice: parseFloat(row.dataset.price) || 0,
+                    quantity: qty,
+                    discount: 0,
+                    stock: stock,
+                });
+            }
+
+            render();
+        });
+    });
+
+    if (productSearchInput) {
+        productSearchInput.addEventListener('input', function () {
+            const term = productSearchInput.value.trim().toLowerCase();
+            catalogRows.forEach(function (row) {
+                const name = row.querySelector('.product-name').textContent.toLowerCase();
+                const sku = row.querySelector('.product-sku').textContent.toLowerCase();
+                row.style.display = (name.includes(term) || sku.includes(term)) ? '' : 'none';
+            });
+        });
+    }
+
+    saleForm.addEventListener('submit', function (event) {
+        if (items.length === 0) {
+            event.preventDefault();
+            alert('Please add at least one product to the sale before completing it.');
+        }
+    });
+
+    render();
+});
+</script>
+@endpush
+@endsection
