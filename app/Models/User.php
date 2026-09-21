@@ -21,6 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
     ];
 
@@ -45,5 +46,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'user_stores')
+            ->withTimestamps();
+    }
+
+    public function branches()
+    {
+        return $this->belongsToMany(Branch::class, 'user_branches')
+            ->withTimestamps();
     }
 }
