@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('content')
     <div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
@@ -30,8 +30,7 @@
                         </div>
                     @endsession
 
-                    {{-- <form method="POST" action="{{ route('login') }}" novalidate> --}}
-                    <form method="POST" novalidate>
+                    <form method="POST" action="{{ route('login.store') }}" novalidate>
                         @csrf
 
                         {{-- Email Address --}}

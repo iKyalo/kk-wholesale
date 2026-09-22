@@ -25,7 +25,7 @@
                     <form method="POST" action="{{ route('branches.store') }}" novalidate>
                         @csrf
 
-                        @include('branches._form')
+                        @include('branches.form')
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-primary px-4">Save Branch</button>
@@ -37,4 +37,4 @@
 
         </div>
     </div>
-    @endsections
+@endsection
