@@ -18,8 +18,8 @@
                             <div class="d-flex align-items-start justify-content-between">
                                 <div>
                                     <p class="text-muted text-uppercase small fw-semibold mb-1">Sales Today</p>
-                                    <h4 class="fw-bold mb-1">KSh {{ number_format($salesToday, 2) }}</h4>
-                                    <p class="text-muted small mb-0">{{ number_format($salesTodayTransactions) }}
+                                    <h4 class="fw-bold mb-1">KSh {{ number_format($salesToday ?? 0, 2) }}</h4>
+                                    <p class="text-muted small mb-0">{{ number_format($salesTodayTransactions ?? 0) }}
                                         transactions</p>
                                 </div>
                                 <span
@@ -38,8 +38,8 @@
                             <div class="d-flex align-items-start justify-content-between">
                                 <div>
                                     <p class="text-muted text-uppercase small fw-semibold mb-1">Sales This Month</p>
-                                    <h4 class="fw-bold mb-1">KSh {{ number_format($salesThisMonth, 2) }}</h4>
-                                    <p class="text-muted small mb-0">{{ number_format($salesThisMonthTransactions) }}
+                                    <h4 class="fw-bold mb-1">KSh {{ number_format($salesThisMonth ?? 0, 2) }}</h4>
+                                    <p class="text-muted small mb-0">{{ number_format($salesThisMonthTransactions ?? 0) }}
                                         transactions</p>
                                 </div>
                                 <span
@@ -58,7 +58,7 @@
                             <div class="d-flex align-items-start justify-content-between">
                                 <div>
                                     <p class="text-muted text-uppercase small fw-semibold mb-1">Low Stock Products</p>
-                                    <h4 class="fw-bold mb-1">{{ number_format($lowStockCount) }}</h4>
+                                    <h4 class="fw-bold mb-1">{{ number_format($lowStockCount ?? 0) }}</h4>
                                     @if ($lowStockCount > 0)
                                         <span class="badge text-bg-warning">Needs attention</span>
                                     @else
@@ -81,7 +81,7 @@
                             <div class="d-flex align-items-start justify-content-between">
                                 <div>
                                     <p class="text-muted text-uppercase small fw-semibold mb-1">Pending Stock Transfers</p>
-                                    <h4 class="fw-bold mb-1">{{ number_format($pendingTransfersCount) }}</h4>
+                                    <h4 class="fw-bold mb-1">{{ number_format($pendingTransfersCount ?? 0) }}</h4>
                                     @if ($pendingTransfersCount > 0)
                                         <span class="badge text-bg-info">Awaiting action</span>
                                     @else
@@ -109,23 +109,23 @@
                     <div class="row g-3 text-center">
                         <div class="col-6 col-md-4 col-lg-2">
                             <p class="text-muted small mb-1">Total Products</p>
-                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalProducts) }}</p>
+                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalProducts ?? 0) }}</p>
                         </div>
                         <div class="col-6 col-md-4 col-lg-2">
                             <p class="text-muted small mb-1">Units in Stock</p>
-                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalUnits) }}</p>
+                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalUnits ?? 0) }}</p>
                         </div>
                         <div class="col-6 col-md-4 col-lg-3">
                             <p class="text-muted small mb-1">Inventory Value</p>
-                            <p class="fw-bold fs-5 mb-0">KSh {{ number_format($totalInventoryValue, 2) }}</p>
+                            <p class="fw-bold fs-5 mb-0">KSh {{ number_format($totalInventoryValue ?? 0, 2) }}</p>
                         </div>
                         <div class="col-6 col-md-4 col-lg-2">
                             <p class="text-muted small mb-1">Branches</p>
-                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalBranches) }}</p>
+                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalBranches ?? 0) }}</p>
                         </div>
                         <div class="col-6 col-md-4 col-lg-2">
                             <p class="text-muted small mb-1">Stores</p>
-                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalStores) }}</p>
+                            <p class="fw-bold fs-5 mb-0">{{ number_format($totalStores ?? 0) }}</p>
                         </div>
                     </div>
                 </div>

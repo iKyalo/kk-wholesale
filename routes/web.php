@@ -26,6 +26,6 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('dashboard.index');
     })->name('dashboard');
 });
