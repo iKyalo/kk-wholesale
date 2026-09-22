@@ -17,6 +17,10 @@ return new class extends Migration
             $table->foreignId('branch_id')
                 ->constrained()
                 ->cascadeOnDelete();
+
+            $table->foreignId('store_id')
+                ->constrained()
+                ->cascadeOnDelete();
         
             $table->foreignId('product_id')
                 ->constrained()
@@ -28,7 +32,7 @@ return new class extends Migration
             $table->timestamps();
         
             // Prevent duplicate inventory records
-            $table->unique(['branch_id', 'product_id']);
+            $table->unique(['store_id', 'product_id']);
         });
     }
 

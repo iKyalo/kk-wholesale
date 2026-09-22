@@ -39,4 +39,9 @@ class Store extends Model
         return $this->belongsToMany(User::class, 'user_stores')
             ->withTimestamps();
     }
+
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class);
+    }
 }

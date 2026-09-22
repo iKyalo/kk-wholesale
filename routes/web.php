@@ -11,6 +11,7 @@ use App\Http\Controllers\BranchesController;
 use App\Http\Controllers\StoresController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\UsersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -209,6 +210,33 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{product}', 'destroy')->name('destroy');
 
         });
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Users Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('users')
+        ->name('users.')
+        ->controller(UsersController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::get('/{user}', 'show')->name('show');
+
+            Route::get('/{user}/edit', 'edit')->name('edit');
+            Route::put('/{user}', 'update')->name('update');
+
+            Route::delete('/{user}', 'destroy')->name('destroy');
+
+        });
+
 
 
     /*

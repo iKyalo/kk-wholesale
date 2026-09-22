@@ -65,4 +65,25 @@ class BranchesController extends Controller
             ->with('success', 'Branch updated successfully.');
     }
 
+    public function destroy(Branch $branch)
+    {
+        if ($branch->stores()->exists()) {
+            return redirect()
+                ->route('branches.index')
+                ->with('error', 'Cannot delete this branch because it has stores.');
+        }
+
+        if ($branch->users()->exists()) {
+            return redirect()
+                ->route('branches.index')
+                ->with('error', 'Cannot delete this branch because users are assigned to it.');
+        }
+
+        $branch->delete();
+
+        return redirect()
+            ->route('branches.index')
+            ->with('success', 'Branch deleted successfully.');
+    }
+
 }

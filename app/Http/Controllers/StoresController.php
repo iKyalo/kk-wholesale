@@ -39,6 +39,17 @@ class StoresController extends Controller
             ->route('stores.index')
             ->with('success', 'Store created successfully.');
     }
+
+    public function show(Store $store)
+    {
+        $store->load([
+            'branch',
+            'users',
+            'inventories.product',
+        ]);
+
+        return view('stores.show', compact('store'));
+    }
     
     
 }

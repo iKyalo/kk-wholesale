@@ -12,7 +12,16 @@ class ProductsController extends Controller
     public function index()
     {
         $products = Product::all();
-        return view('products.index', compact('products'));
+
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('is_active', true)->count();
+        $inactiveProducts = Product::where('is_active', false)->count();
+        $lowStockProducts = Product::whereHas('inventories', function ($query) {
+            $query->whereColumn('quantity', '<=', 'products.minimum_stock');
+        })->count();
+
+        return view('products.index', compact('products', 'activeProducts', 
+                                            'inactiveProducts', 'totalProducts', 'lowStockProducts'));
     }
 
     public function create()
