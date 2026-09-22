@@ -26,7 +26,7 @@
                         @csrf
                         @method('PUT')
 
-                        @include('branches._form')
+                        @include('branches.form')
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-primary px-4">Update Branch</button>

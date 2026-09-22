@@ -13,9 +13,9 @@
                     <a href="{{ route('branches.edit', $branch) }}" class="btn btn-outline-primary">
                         <i class="bi bi-pencil me-1"></i> Edit Branch
                     </a>
-                    <a href="{{ route('branches.users.edit', $branch) }}" class="btn btn-outline-info">
+                    {{-- <a href="{{ route('branches.users.edit', $branch) }}" class="btn btn-outline-info">
                         <i class="bi bi-people me-1"></i> Assign Users
-                    </a>
+                    </a> --}}
                     <a href="{{ route('branches.index') }}" class="btn btn-outline-secondary">
                         Back to Branches
                     </a>
@@ -125,11 +125,11 @@
 
             {{-- Assigned Users --}}
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 pt-3 d-flex align-items-center justify-content-between">
+                {{-- <div class="card-header bg-white border-0 pt-3 d-flex align-items-center justify-content-between">
                     <h2 class="h6 fw-bold mb-0">Assigned Users</h2>
                     <a href="{{ route('branches.users.edit', $branch) }}" class="btn btn-sm btn-outline-primary">Assign
                         Users</a>
-                </div>
+                </div> --}}
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -170,8 +170,8 @@
                                                 </button>
                                             </div>
 
-                                            <div class="modal fade" id="removeUserModal{{ $user->id }}"
-                                                tabindex="-1" aria-hidden="true">
+                                            <div class="modal fade" id="removeUserModal{{ $user->id }}" tabindex="-1"
+                                                aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content">
                                                         <div class="modal-header">

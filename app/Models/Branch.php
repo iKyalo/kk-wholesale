@@ -17,6 +17,8 @@ class Branch extends Model
         'phone',
         'email',
         'address',
+        'location',
+        'status',
         'is_active',
     ];
 
@@ -27,9 +29,9 @@ class Branch extends Model
         ];
     }
 
-    public function store()
+    public function stores()
     {
-        return $this->belongsTo(Store::class);
+        return $this->hasMany(Store::class);
     }
 
     public function users()

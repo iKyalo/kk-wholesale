@@ -54,6 +54,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Branch Name</th>
                                     <th>Code</th>
                                     <th>Location</th>
@@ -67,6 +68,7 @@
                             <tbody>
                                 @forelse ($branches as $branch)
                                     <tr>
+                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $branch->name }}</td>
                                         <td>{{ $branch->code }}</td>
                                         <td>{{ $branch->location }}</td>
@@ -90,10 +92,10 @@
                                                     class="btn btn-sm btn-outline-primary" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <a href="{{ route('branches.users.edit', $branch) }}"
+                                                {{-- <a href="{{ route('branches.users.edit', $branch) }}"
                                                     class="btn btn-sm btn-outline-info" title="Assign Users">
                                                     <i class="bi bi-people"></i>
-                                                </a>
+                                                </a> --}}
                                                 <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#deleteBranchModal{{ $branch->id }}">

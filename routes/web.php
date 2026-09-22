@@ -1,106 +1,220 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\BranchesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\TransfersController;
+use App\Http\Controllers\BranchesController;
+use App\Http\Controllers\StoresController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\StoresController;
-use App\Http\Controllers\TransfersController;
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::redirect('/', '/dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Guest Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
+
+    Route::get('/login', 'showLogin')->name('login');
+    Route::post('/login', 'login')->name('login.store');
+
+    Route::get('/register', 'showRegister')->name('register');
+    Route::post('/register', 'register')->name('register.store');
+
 });
 
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
-    Route::post('/login', [AuthController::class, 'login'])
-        ->name('login.store');
-
-    Route::get('/register', [AuthController::class, 'showRegister'])
-        ->name('register');
-
-    Route::post('/register', [AuthController::class, 'register'])
-        ->name('register.store');
-});
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication
+    |--------------------------------------------------------------------------
+    */
+
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    Route::get('/sales', [SalesController::class, 'index'])
-        ->name('sales.index');
 
-    Route::get('/sales/create', [SalesController::class, 'create'])
-        ->name('sales.create');
+    /*
+    |--------------------------------------------------------------------------
+    | Sales
+    |--------------------------------------------------------------------------
+    */
 
-    Route::post('/sales', [SalesController::class, 'store'])
-        ->name('sales.store');
+    Route::prefix('sales')
+        ->name('sales.')
+        ->controller(SalesController::class)
+        ->group(function () {
 
-    Route::get('/sales/by-store', [SalesController::class, 'byStore'])
-        ->name('sales.by-store');
+            Route::get('/', 'index')->name('index');
 
-    Route::get('/sales/by-product', [SalesController::class, 'byProduct'])
-        ->name('sales.by-product');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
 
-    Route::get('/sales/by-branch', [SalesController::class, 'byBranch'])
-        ->name('sales.by-branch');
+            // Sales analytics
+            Route::get('/by-store', 'byStore')->name('by-store');
+            Route::get('/by-product', 'byProduct')->name('by-product');
+            Route::get('/by-branch', 'byBranch')->name('by-branch');
 
-    Route::get('/inventory', [InventoryController::class, 'index'])
-        ->name('inventory.index'); 
-
-    Route::get('/inventory/by-store', [InventoryController::class, 'byStore'])
-        ->name('inventory.by-store');
-
-    Route::get('/inventory/edit-stock', [InventoryController::class, 'editStock'])
-        ->name('inventory.edit-stock');
-
-    Route::get('/transfers', [TransfersController::class, 'index'])
-        ->name('transfers.index');
-
-    Route::get('/transfers/create', [TransfersController::class, 'create'])
-        ->name('transfers.create');
-
-    Route::post('/transfers', [TransfersController::class, 'store'])
-        ->name('transfers.store');
+        });
 
 
-    Route::get('/branches', [BranchesController::class, 'index'])
-        ->name('branches.index');  
+    /*
+    |--------------------------------------------------------------------------
+    | Inventory
+    |--------------------------------------------------------------------------
+    */
 
-    Route::get('/branches/create', [BranchesController::class, 'create'])
-        ->name('branches.create');
+    Route::prefix('inventory')
+        ->name('inventory.')
+        ->controller(InventoryController::class)
+        ->group(function () {
 
-    Route::post('/branches', [BranchesController::class, 'store'])
-        ->name('branches.store');
-        
+            Route::get('/', 'index')->name('index');
 
-    Route::get('/stores', [StoresController::class, 'index'])
-        ->name('stores.index');
+            Route::get('/by-store', 'byStore')->name('by-store');
 
-    Route::get('/stores/create', [StoresController::class, 'create'])
-        ->name('stores.create');
+            Route::get('/edit-stock', 'editStock')->name('edit-stock');
 
-    Route::post('/stores', [StoresController::class, 'store'])
-        ->name('stores.store');
+        });
 
-    Route::get('/products', [ProductsController::class, 'index'])
-        ->name('products.index');
-    Route::get('/products/create', [ProductsController::class, 'create'])
-        ->name('products.create');
-    Route::post('/products', [ProductsController::class, 'store'])
-        ->name('products.store');
-        
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Transfers
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('transfers')
+        ->name('transfers.')
+        ->controller(TransfersController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Branch Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('branches')
+        ->name('branches.')
+        ->controller(BranchesController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::get('/{branch}', 'show')->name('show');
+
+            Route::get('/{branch}/edit', 'edit')->name('edit');
+            Route::put('/{branch}', 'update')->name('update');
+
+            // Route::get('/{branch}/users/{user}/edit', 'editUser')->name('users.edit');
+            // Route::put('/{branch}/users/{user}', 'updateUser')->name('users.update');
+
+            Route::delete('/{branch}', 'destroy')->name('destroy'); 
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('stores')
+        ->name('stores.')
+        ->controller(StoresController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::get('/{store}', 'show')->name('show');
+
+            Route::get('/{store}/edit', 'edit')->name('edit');
+            Route::put('/{store}', 'update')->name('update');
+
+            Route::delete('/{store}', 'destroy')->name('destroy');
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Product Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('products')
+        ->name('products.')
+        ->controller(ProductsController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+
+            Route::get('/{product}', 'show')->name('show');
+
+            Route::get('/{product}/edit', 'edit')->name('edit');
+            Route::put('/{product}', 'update')->name('update');
+
+            Route::delete('/{product}', 'destroy')->name('destroy');
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reports
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/reports', [ReportsController::class, 'index'])
         ->name('reports.index');
-        
-        
+
 });
