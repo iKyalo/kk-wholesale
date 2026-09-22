@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Store;
 use App\Models\Branch;
+use App\Models\Store;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
 class StoresController extends Controller
 {
     public function index()
     {
-        $stores = Store::all();
+        $stores = Store::with('branch')->get();
         $branches = Branch::all();
+
         return view('stores.index', compact('stores', 'branches'));
     }
 
     public function create()
     {
         $branches = Branch::all();
+
         return view('stores.create', compact('branches'));
     }
 
@@ -50,6 +54,45 @@ class StoresController extends Controller
 
         return view('stores.show', compact('store'));
     }
-    
-    
+
+    public function edit(Store $store)
+    {
+        $branches = Branch::all();
+
+        return view('stores.edit', compact('store', 'branches'));
+    }
+
+    public function update(Request $request, Store $store)
+    {
+        $validated = $request->validate([
+            'name'      => ['required', 'string', 'max:255'],
+            'code'      => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('stores', 'code')->ignore($store->id),
+            ],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
+            'is_active' => ['required', 'boolean'],
+            'location'  => ['required', 'string', 'max:255'],
+            'phone'     => ['nullable', 'string', 'max:20'],
+            'email'     => ['nullable', 'email', 'max:255'],
+            'address'   => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $store->update($validated);
+
+        return redirect()
+            ->route('stores.index')
+            ->with('success', 'Store updated successfully.');
+    }
+
+    public function destroy(Store $store)
+    {
+        $store->delete();
+
+        return redirect()
+            ->route('stores.index')
+            ->with('success', 'Store deleted successfully.');
+    }
 }

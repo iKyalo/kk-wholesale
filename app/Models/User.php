@@ -59,4 +59,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Branch::class, 'user_branches')
             ->withTimestamps();
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }
