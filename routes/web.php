@@ -105,6 +105,9 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/edit-stock', 'editStock')->name('edit-stock');
 
+            Route::post('/edit-stock', 'editStock')->name('update-stock');
+
+
         });
 
 
@@ -214,7 +217,34 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/reports', [ReportsController::class, 'index'])
-        ->name('reports.index');
+    Route::prefix('reports')
+    ->name('reports.')
+    ->controller(ReportsController::class)
+    ->group(function () {
+
+        Route::get('/', 'index')
+            ->name('index');
+
+        Route::get('/sales', 'sales')
+            ->name('sales');
+
+        Route::get('/inventory', 'inventory')
+            ->name('inventory');
+
+        Route::get('/stock-movements', 'stockMovements')
+            ->name('stock-movements');
+
+        Route::get('/transfers', 'transfers')
+            ->name('transfers');
+
+        Route::get('/products', 'products')
+            ->name('products');
+
+        Route::get('/branches', 'branches')
+            ->name('branches');
+
+        Route::get('/stores', 'stores')
+            ->name('stores');
+    });
 
 });
