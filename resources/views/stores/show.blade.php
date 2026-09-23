@@ -20,9 +20,9 @@
                     <a href="{{ route('stores.edit', $store) }}" class="btn btn-outline-primary">
                         <i class="bi bi-pencil me-1"></i> Edit Store
                     </a>
-                    {{-- <a href="{{ route('stores.users.edit', $store) }}" class="btn btn-outline-info">
-                <i class="bi bi-people me-1"></i> Assign Users
-            </a> --}}
+                    <a href="{{ route('stores.users.edit', $store) }}" class="btn btn-outline-info">
+                        <i class="bi bi-people me-1"></i> Assign Users
+                    </a>
                     <a href="{{ route('stores.index') }}" class="btn btn-outline-secondary">
                         Back to Stores
                     </a>
@@ -146,8 +146,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 pt-3 d-flex align-items-center justify-content-between">
                     <h2 class="h6 fw-bold mb-0">Assigned Users</h2>
-                    {{-- <a href="{{ route('stores.users.edit', $store) }}" class="btn btn-sm btn-outline-primary"> --}}
-                    <a href="" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('stores.users.edit', $store) }}" class="btn btn-sm btn-outline-primary">
                         Assign Users
                     </a>
                 </div>

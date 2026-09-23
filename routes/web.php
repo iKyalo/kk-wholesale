@@ -152,8 +152,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/{branch}/edit', 'edit')->name('edit');
             Route::put('/{branch}', 'update')->name('update');
 
-            // Route::get('/{branch}/users/{user}/edit', 'editUser')->name('users.edit');
-            // Route::put('/{branch}/users/{user}', 'updateUser')->name('users.update');
+            Route::get('/{branch}/users/edit', 'editUser')->name('users.edit');
+            Route::put('/{branch}/users/', 'updateUser')->name('users.update');
 
             Route::delete('/{branch}', 'destroy')->name('destroy'); 
 
@@ -180,6 +180,9 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/{store}/edit', 'edit')->name('edit');
             Route::put('/{store}', 'update')->name('update');
+
+            Route::get('/{store}/users/edit', 'editUser')->name('users.edit');
+            Route::put('/{store}/users/', 'updateUser')->name('users.update');
 
             Route::delete('/{store}', 'destroy')->name('destroy');
 

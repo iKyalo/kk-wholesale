@@ -63,12 +63,12 @@
                             <i class="bi bi-person me-2"></i> My Profile
                         </a>
                     </li>
-                    <li>
+                    {{-- <li>
                         <a class="dropdown-item"
                             href="{{ Route::has('settings.index') ? route('settings.index') : '#' }}">
                             <i class="bi bi-gear me-2"></i> Settings
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <hr class="dropdown-divider">
                     </li>

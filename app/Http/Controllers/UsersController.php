@@ -25,7 +25,8 @@ class UsersController extends Controller
             ->orderBy('name')
             ->get();
 
-        $users = User::with(['branches', 'stores'])
+        $users = User::query()
+            ->with(['role', 'branches', 'stores'])
             ->latest()
             ->paginate(15);
 
@@ -52,7 +53,7 @@ class UsersController extends Controller
         $roles = Role::all();
         // dd($roles);
 
-        $user = Auth::user();
+        $user = [];
 
         return view('users.create', compact('branches', 'stores', 'roles', 'user'));
     }
@@ -68,7 +69,8 @@ class UsersController extends Controller
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
 
-            'role_id' => ['required', 'exists:roles,id'],
+            'role' => ['required', 'exists:roles,id'],
+            'status' => ['required', 'in:active,inactive'],
 
             'branch_ids' => ['nullable', 'array'],
             'branch_ids.*' => ['exists:branches,id'],
@@ -79,7 +81,7 @@ class UsersController extends Controller
 
         DB::transaction(function () use ($validated) {
 
-            $role = Role::findOrFail($validated['role_id']);
+            $role = Role::findOrFail($validated['role']);
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -87,6 +89,7 @@ class UsersController extends Controller
                 'phone' => $validated['phone'],
                 'password' => Hash::make($validated['password']),
                 'role_id' => $role->id,
+                'status' => $validated['status'],
             ]);
 
             // Assign branches to Branch Managers.
@@ -129,9 +132,11 @@ class UsersController extends Controller
         $branches = Branch::orderBy('name')->get();
         $stores = Store::orderBy('name')->get();
 
+        $roles = Role::all();
+
         return view(
             'users.edit',
-            compact('user', 'branches', 'stores')
+            compact('user', 'branches', 'stores', 'roles')
         );
     }
 
@@ -140,6 +145,7 @@ class UsersController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // dd($request);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
 
@@ -159,14 +165,8 @@ class UsersController extends Controller
 
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
 
-            'role' => [
-                'required',
-                Rule::in([
-                    'administrator',
-                    'branch_manager',
-                    'store_manager',
-                ]),
-            ],
+            'role' => ['required', 'exists:roles,id'],
+            'status' => ['required', 'in:active,inactive'],
 
             'branch_ids' => ['nullable', 'array'],
             'branch_ids.*' => ['exists:branches,id'],
@@ -180,7 +180,8 @@ class UsersController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
-                'role' => $validated['role'],
+                'role_id' => $validated['role'],
+                'status' => $validated['status'],
             ];
 
             // Only update password if provided.
@@ -194,14 +195,14 @@ class UsersController extends Controller
 
             // Sync branch assignments.
             $user->branches()->sync(
-                $user->role === 'branch_manager'
+                $user->role === 2
                     ? ($validated['branch_ids'] ?? [])
                     : []
             );
 
             // Sync store assignments.
             $user->stores()->sync(
-                $user->role === 'store_manager'
+                $user->role === 3
                     ? ($validated['store_ids'] ?? [])
                     : []
             );

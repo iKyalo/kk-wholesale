@@ -95,4 +95,7 @@ class StoresController extends Controller
             ->route('stores.index')
             ->with('success', 'Store deleted successfully.');
     }
+
+    public function editUser() {}
+    public function updateUser() {}
 }

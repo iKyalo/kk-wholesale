@@ -86,4 +86,14 @@ class BranchesController extends Controller
             ->with('success', 'Branch deleted successfully.');
     }
 
+    public function editUser() 
+    {
+
+    }
+
+    public function updateUser() 
+    {
+
+    }
+
 }

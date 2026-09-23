@@ -1,7 +1,3 @@
-{{--
-    Active-state helper: routeIs() accepts a wildcard pattern, e.g. 'branches.*'
-    matches branches.index, branches.create, branches.edit, etc.
---}}
 @php
     $isActive = function (...$patterns) {
         return request()->routeIs($patterns);
@@ -178,14 +174,14 @@
                 </div>
             </li>
 
-            <li class="nav-item mt-auto">
+            {{-- <li class="nav-item mt-auto">
                 <a href="{{ Route::has('settings.index') ? route('settings.index') : '#' }}"
                     class="nav-link {{ $isActive('settings.*') ? 'active' : '' }}" data-bs-toggle="tooltip"
                     data-bs-placement="right" title="Settings">
                     <i class="bi bi-gear"></i>
                     <span class="nav-label">Settings</span>
                 </a>
-            </li>
+            </li> --}}
 
         </ul>
     </div>

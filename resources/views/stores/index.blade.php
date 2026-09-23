@@ -105,9 +105,10 @@
                                                     class="btn btn-sm btn-outline-primary" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                {{-- <a href="{{ route('stores.users.edit', $store) }}" class="btn btn-sm btn-outline-info" title="Assign Users">
-                                            <i class="bi bi-people"></i>
-                                        </a> --}}
+                                                <a href="{{ route('stores.users.edit', $store) }}"
+                                                    class="btn btn-sm btn-outline-info" title="Assign Users">
+                                                    <i class="bi bi-people"></i>
+                                                </a>
                                                 <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#deleteStoreModal{{ $store->id }}">

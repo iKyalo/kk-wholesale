@@ -1,16 +1,10 @@
-{{--
-    Expects: $roles, $branches, $stores
-    Optional: $user (when editing)
-    Role values assumed: administrator, branch_manager, store_manager
---}}
-
 <div class="row g-3">
 
     {{-- Full Name --}}
     <div class="col-md-6">
         <label for="name" class="form-label">Full Name</label>
         <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
-            value="{{ old('name', $user->name ?? '') }}" placeholder="e.g. Jane Wanjiru" required autofocus>
+            value="{{ old('name', $user->name ?? '') }}" placeholder="e.g. Jane Doe" required autofocus>
         @error('name')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -38,13 +32,19 @@
 
     {{-- Status --}}
     <div class="col-md-6">
-        <label for="is_active" class="form-label">Status</label>
-        <select class="form-select @error('is_active') is-invalid @enderror" id="is_active" name="is_active">
-            <option value="1" {{ old('is_active', $user->is_active ?? 1) == 1 ? 'selected' : '' }}>Active</option>
-            <option value="0" {{ old('is_active', $user->is_active ?? 1) == 0 ? 'selected' : '' }}>Inactive
+        <label for="status" class="form-label">Status</label>
+
+        <select class="form-select @error('status') is-invalid @enderror" id="status" name="status">
+            <option value="active" {{ old('status', $user->status ?? 'active') == 'active' ? 'selected' : '' }}>
+                Active
+            </option>
+
+            <option value="inactive" {{ old('status', $user->status ?? 'active') == 'inactive' ? 'selected' : '' }}>
+                Inactive
             </option>
         </select>
-        @error('is_active')
+
+        @error('status')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>

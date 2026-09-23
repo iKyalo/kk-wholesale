@@ -37,7 +37,7 @@
                         @foreach ($roles as $roleValue => $roleLabel)
                             <option value="{{ $roleValue }}"
                                 {{ (string) request('role') === (string) $roleValue ? 'selected' : '' }}>
-                                {{ $roleLabel }}
+                                {{ $roleLabel->name }}
                             </option>
                         @endforeach
                     </select>
@@ -122,7 +122,7 @@
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone ?? '—' }}</td>
                     <td>
-                        @switch($user->role)
+                        @switch($user->role?->name)
                             @case('administrator')
                                 <span class="badge text-bg-primary">Administrator</span>
                             @break
@@ -136,7 +136,9 @@
                             @break
 
                             @default
-                                <span class="badge text-bg-secondary">{{ $roles[$user->role] ?? ucfirst($user->role) }}</span>
+                                <span class="badge text-bg-secondary">
+                                    {{ $user->role?->name ?? 'No Role' }}
+                                </span>
                         @endswitch
                     </td>
                     <td>
@@ -158,7 +160,7 @@
                         @endif
                     </td>
                     <td>
-                        @if ($user->is_active)
+                        @if ($user->status === 'active')
                             <span class="badge text-bg-success">Active</span>
                         @else
                             <span class="badge text-bg-secondary">Inactive</span>
@@ -182,7 +184,7 @@
                                         <i class="bi bi-pencil me-2"></i> Edit
                                     </a>
                                 </li>
-                                <li>
+                                {{-- <li>
                                     <button type="button" class="dropdown-item" data-bs-toggle="modal"
                                         data-bs-target="#toggleStatusModal{{ $user->id }}">
                                         @if ($user->is_active)
@@ -191,7 +193,7 @@
                                             <i class="bi bi-check-circle me-2"></i> Activate
                                         @endif
                                     </button>
-                                </li>
+                                </li> --}}
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
