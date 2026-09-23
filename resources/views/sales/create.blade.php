@@ -16,7 +16,13 @@
 
             @if ($errors->any())
                 <div class="alert alert-danger" role="alert">
-                    Please fix the errors below and try again.
+                    <strong>Please fix the following errors:</strong>
+
+                    <ul class="mb-0 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -63,7 +69,8 @@
                                             </option>
 
                                             @foreach ($stores as $store)
-                                                <option value="{{ $store->id }}" data-branch-id="{{ $store->branch_id }}"
+                                                <option value="{{ $store->id }}"
+                                                    data-branch-id="{{ $store->branch_id }}"
                                                     {{ (string) old('store_id') === (string) $store->id ? 'selected' : '' }}>
                                                     {{ $store->name }}
                                                 </option>
@@ -79,7 +86,7 @@
                                         @enderror
                                     </div>
 
-                                    <div class="col-md-6">
+                                    {{-- <div class="col-md-6">
                                         <label for="customer_name" class="form-label">Customer Name <span
                                                 class="text-muted fw-normal">(optional)</span></label>
                                         <input type="text"
@@ -101,7 +108,7 @@
                                         @error('customer_phone')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                    </div>
+                                    </div> --}}
 
                                     <div class="col-md-6">
                                         <label for="payment_method" class="form-label">Payment Method</label>

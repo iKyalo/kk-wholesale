@@ -7,7 +7,11 @@ use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\Sale;
 use App\Models\Store;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SalesController extends Controller
 {
@@ -117,4 +121,344 @@ class SalesController extends Controller
 
         return response()->json($stock);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'branch_id' => [
+                'required',
+                'integer',
+                'exists:branches,id',
+            ],
+
+            'store_id' => [
+                'required',
+                'integer',
+                'exists:stores,id',
+            ],
+
+            'payment_method' => [
+                'required',
+                'in:cash,mpesa,card,bank_transfer',
+            ],
+
+            'sale_date' => [
+                'required',
+                'date',
+            ],
+
+            'customer_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'customer_phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'items' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'items.*.product_id' => [
+                'required',
+                'integer',
+                'exists:products,id',
+            ],
+
+            'items.*.quantity' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+
+            'items.*.discount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+        ]);
+
+        // Make sure the selected store belongs to the selected branch.
+        $store = Store::where('id', $validated['store_id'])
+            ->where('branch_id', $validated['branch_id'])
+            ->first();
+
+        if (!$store) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'store_id' => 'The selected store does not belong to the selected branch.',
+                ]);
+        }
+
+        try {
+            $sale = DB::transaction(function () use ($validated) {
+
+                $saleSubtotal = 0;
+                $saleDiscount = 0;
+
+                $itemsToCreate = [];
+
+                /*
+                * Prevent the same product from appearing multiple times
+                * in the submitted sale.
+                */
+                $items = collect($validated['items'])
+                    ->groupBy('product_id')
+                    ->map(function ($productItems) {
+                        return [
+                            'product_id' => $productItems->first()['product_id'],
+                            'quantity' => $productItems->sum('quantity'),
+                            'discount' => $productItems->sum(function ($item) {
+                                return (float) ($item['discount'] ?? 0);
+                            }),
+                        ];
+                    })
+                    ->values();
+
+                foreach ($items as $item) {
+
+                    $product = Product::findOrFail($item['product_id']);
+
+                    /*
+                    * Lock the inventory row so two sales cannot sell
+                    * the same stock simultaneously.
+                    */
+                    $inventory = Inventory::where('store_id', $validated['store_id'])
+                        ->where('product_id', $product->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$inventory) {
+                        throw new \Exception(
+                            "No inventory record exists for {$product->name} in the selected store."
+                        );
+                    }
+
+                    $availableStock = (int) $inventory->quantity;
+                    $quantity = (int) $item['quantity'];
+
+                    if ($quantity > $availableStock) {
+                        throw new \Exception(
+                            "Insufficient stock for {$product->name}. "
+                            . "Available: {$availableStock}, requested: {$quantity}."
+                        );
+                    }
+
+                    $unitPrice = (float) $product->selling_price;
+                    $discount = (float) ($item['discount'] ?? 0);
+
+                    $lineSubtotal = ($unitPrice * $quantity) - $discount;
+
+                    if ($lineSubtotal < 0) {
+                        throw new \Exception(
+                            "Discount for {$product->name} cannot exceed the line value."
+                        );
+                    }
+
+                    $saleSubtotal += $unitPrice * $quantity;
+                    $saleDiscount += $discount;
+
+                    $itemsToCreate[] = [
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'discount' => $discount,
+                        'subtotal' => $lineSubtotal,
+                    ];
+
+                    // Deduct stock.
+                    $inventory->decrement('quantity', $quantity);
+                }
+
+                /*
+                * Tax is currently zero because your form/schema does not
+                * show a tax input or tax configuration.
+                */
+                $tax = 0;
+
+                $total = $saleSubtotal - $saleDiscount + $tax;
+
+                /*
+                * Generate a unique sale number.
+                */
+                do {
+                    $saleNumber = 'SALE-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(5));
+                } while (Sale::where('sale_number', $saleNumber)->exists());
+
+                $sale = DB::transaction(function () use ($validated) {
+
+                $saleSubtotal = 0;
+                $saleDiscount = 0;
+
+                $itemsToCreate = [];
+
+                $items = collect($validated['items'])
+                    ->groupBy('product_id')
+                    ->map(function ($productItems) {
+                        return [
+                            'product_id' => $productItems->first()['product_id'],
+                            'quantity' => $productItems->sum('quantity'),
+                            'discount' => $productItems->sum(function ($item) {
+                                return (float) ($item['discount'] ?? 0);
+                            }),
+                        ];
+                    })
+                    ->values();
+
+                /*
+                * First validate stock and calculate totals.
+                */
+                foreach ($items as $item) {
+
+                    $product = Product::findOrFail($item['product_id']);
+
+                    $inventory = Inventory::where('store_id', $validated['store_id'])
+                        ->where('product_id', $product->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$inventory) {
+                        throw new \Exception(
+                            "No inventory record exists for {$product->name} in the selected store."
+                        );
+                    }
+
+                    $quantity = (int) $item['quantity'];
+
+                    if ($quantity > $inventory->quantity) {
+                        throw new \Exception(
+                            "Insufficient stock for {$product->name}. "
+                            . "Available: {$inventory->quantity}, requested: {$quantity}."
+                        );
+                    }
+
+                    $unitPrice = (float) $product->selling_price;
+                    $discount = (float) ($item['discount'] ?? 0);
+
+                    $lineSubtotal = ($unitPrice * $quantity) - $discount;
+
+                    if ($lineSubtotal < 0) {
+                        throw new \Exception(
+                            "Discount for {$product->name} cannot exceed the line value."
+                        );
+                    }
+
+                    $saleSubtotal += $unitPrice * $quantity;
+                    $saleDiscount += $discount;
+
+                    $itemsToCreate[] = [
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'discount' => $discount,
+                        'subtotal' => $lineSubtotal,
+                        'inventory_id' => $inventory->id,
+                    ];
+                }
+
+                $tax = 0;
+
+                $total = $saleSubtotal - $saleDiscount + $tax;
+
+                /*
+                * Create sale first.
+                */
+                do {
+                    $saleNumber = 'SALE-' .
+                        now()->format('YmdHis') .
+                        '-' .
+                        strtoupper(Str::random(5));
+
+                } while (Sale::where('sale_number', $saleNumber)->exists());
+
+                $sale = Sale::create([
+                    'sale_number' => $saleNumber,
+                    'branch_id' => $validated['branch_id'],
+                    'store_id' => $validated['store_id'],
+                    'user_id' => Auth::id(),
+
+                    'subtotal' => $saleSubtotal,
+                    'discount' => $saleDiscount,
+                    'tax' => $tax,
+                    'total' => $total,
+
+                    'payment_method' => $validated['payment_method'],
+                    'status' => 'completed',
+                    'sold_at' => $validated['sale_date'],
+                ]);
+
+                /*
+                * Now create sale items, deduct stock,
+                * and create stock movements.
+                */
+                foreach ($itemsToCreate as $item) {
+
+                    $sale->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'discount' => $item['discount'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
+
+                    $inventory = Inventory::where('id', $item['inventory_id'])
+                        ->lockForUpdate()
+                        ->firstOrFail();
+
+                    $inventory->decrement(
+                        'quantity',
+                        $item['quantity']
+                    );
+
+                    StockMovement::create([
+                        'product_id' => $item['product_id'],
+                        'store_id' => $validated['store_id'],
+                        'user_id' => Auth::id(),
+
+                        'type' => 'sale',
+                        'quantity' => -$item['quantity'],
+
+                        'reference_type' => Sale::class,
+                        'reference_id' => $sale->id,
+
+                        'notes' => "Stock deducted for {$sale->sale_number}",
+                    ]);
+                }
+
+                return $sale;
+            });
+            });
+
+            return redirect()
+                ->route('sales.show', $sale)
+                ->with('success', "Sale {$sale->sale_number} completed successfully.");
+
+        } catch (\Throwable $e) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'sale' => $e->getMessage(),
+                ]);
+        }
+    }
+
+    public function show(Sale $sale)
+    {
+        $sale->load([
+            'store.branch',
+            'cashier',
+            'items.product',
+        ]);
+
+        return view('sales.show', compact('sale'));
+    }
+
 }

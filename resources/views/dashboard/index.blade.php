@@ -142,10 +142,11 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Sale #</th>
                                     <th>Date</th>
                                     <th>Store</th>
-                                    <th>Customer</th>
+                                    {{-- <th>Customer</th> --}}
                                     <th>Items</th>
                                     <th>Total</th>
                                     <th>Payment Method</th>
@@ -155,10 +156,11 @@
                             <tbody>
                                 @forelse ($recentSales as $sale)
                                     <tr>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $sale->sale_number }}</td>
                                         <td>{{ $sale->created_at->format('d M Y, H:i') }}</td>
-                                        <td>{{ $sale->store->name }}</td>
-                                        <td>{{ $sale->customer->name ?? 'Walk-in' }}</td>
+                                        <td>{{ $sale->store->name ?? 'N/A' }}</td>
+                                        {{-- <td>{{ $sale->customer->name ?? 'Walk-in' }}</td> --}}
                                         <td>{{ $sale->items_count }}</td>
                                         <td>KSh {{ number_format($sale->total, 2) }}</td>
                                         <td>{{ $sale->payment_method }}</td>
@@ -176,7 +178,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted py-4">No recent sales to display.
+                                        <td colspan="9" class="text-center text-muted py-4">No recent sales to display.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -197,6 +199,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Product</th>
                                     <th>SKU</th>
                                     <th>Store</th>
@@ -208,9 +211,10 @@
                             <tbody>
                                 @forelse ($lowStockProducts as $product)
                                     <tr>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $product->name }}</td>
                                         <td>{{ $product->sku }}</td>
-                                        <td>{{ $product->store->name }}</td>
+                                        <td>{{ $product->store->name ?? 'N/A' }}</td>
                                         <td>{{ number_format($product->current_stock) }}</td>
                                         <td>{{ number_format($product->minimum_stock) }}</td>
                                         <td>
@@ -223,7 +227,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">No low-stock products right
+                                        <td colspan="7" class="text-center text-muted py-4">No low-stock products right
                                             now.</td>
                                     </tr>
                                 @endforelse
@@ -245,6 +249,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Transfer #</th>
                                     <th>From</th>
                                     <th>To</th>
@@ -258,11 +263,12 @@
                             <tbody>
                                 @forelse ($pendingTransfers as $transfer)
                                     <tr>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $transfer->transfer_number }}</td>
-                                        <td>{{ $transfer->fromStore->name }}</td>
-                                        <td>{{ $transfer->toStore->name }}</td>
+                                        <td>{{ $transfer->fromStore->name ?? 'N/A' }}</td>
+                                        <td>{{ $transfer->toStore->name ?? 'N/A' }}</td>
                                         <td>{{ $transfer->items_count }}</td>
-                                        <td>{{ $transfer->requestedBy->name }}</td>
+                                        <td>{{ $transfer->requestedBy->name ?? 'N/A' }}</td>
                                         <td>{{ $transfer->created_at->format('d M Y') }}</td>
                                         <td>
                                             @if ($transfer->status === 'pending')
@@ -283,7 +289,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted py-4">No pending stock transfers.
+                                        <td colspan="9" class="text-center text-muted py-4">No pending stock transfers.
                                         </td>
                                     </tr>
                                 @endforelse

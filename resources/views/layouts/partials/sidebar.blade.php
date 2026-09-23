@@ -138,13 +138,13 @@
                 </div>
             </li>
 
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a href="{{ route('reports.index') }}" class="nav-link {{ $isActive('reports.*') ? 'active' : '' }}"
                     data-bs-toggle="tooltip" data-bs-placement="right" title="Reports">
                     <i class="bi bi-bar-chart"></i>
                     <span class="nav-label">Reports</span>
                 </a>
-            </li>
+            </li> --}}
 
             {{-- Users (expandable submenu) --}}
             <li class="nav-item">

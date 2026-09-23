@@ -81,6 +81,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
 
+            Route::get('/{sale}', 'show')
+                ->whereNumber('sale')
+                ->name('show');
+
             // Sales analytics
             Route::get('/by-store', 'byStore')->name('by-store');
             Route::get('/by-product', 'byProduct')->name('by-product');
