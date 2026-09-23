@@ -1,4 +1,4 @@
-# Inventory & Sales Management System - KK Wholesalers
+# KK Wholesalers - Inventory & Sales Management System
 
 A Laravel-based wholesale inventory and sales management system for managing products, stores, inventory, stock transfers, and sales.
 
@@ -37,8 +37,8 @@ Make sure the following are installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/iKyalo/kk-wholesale
+cd kk-wholesale
 ```
 
 ### 2. Install PHP Dependencies
@@ -84,50 +84,34 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Adjust the credentials to match the local environment.
+Adjust the credentials to match your environment.
 
-### 7. Run Migrations
-
-```bash
-php artisan migrate
-```
-
-If seeders are available:
-
-```bash
-php artisan db:seed
-```
-
-Or:
+### 7. Run Migrations and data seeders
 
 ```bash
 php artisan migrate --seed
 ```
 
-### 8. Build Frontend Assets
-
-For development:
-
-```bash
-npm run dev
-```
-
-For production:
-
-```bash
-npm run build
-```
-
-### 9. Start the Laravel Development Server
+### 8. Start the Laravel Development Server
 
 ```bash
 php artisan serve
 ```
 
-The application will normally be available at:
+The application should be available at:
 
 ```text
 http://127.0.0.1:8000
+```
+
+### 8. Login
+
+Login with the following credentials:
+
+```text
+admin@kkwholesale.co.ke
+
+password
 ```
 
 ---
@@ -143,8 +127,6 @@ The system assumes three primary roles:
 - **Administrator** — has access to the entire system.
 - **Branch Manager** — manages stores and operations belonging to their branch.
 - **Store Manager** — manages operations for their assigned store.
-
-User-to-store and user-to-branch access is expected to be controlled through the application's relationships and authorization logic.
 
 ### Inventory
 
@@ -207,25 +189,9 @@ A transfer contains:
 
 A store cannot transfer stock to itself.
 
-### Transfer Status
-
-The system assumes the following transfer lifecycle:
-
-```text
-Pending
-   ↓
-In Transit
-   ↓
-Completed
-```
-
-A transfer can also be cancelled where the application's business rules allow it.
-
 ### Stock Availability
 
 Available stock is calculated from the inventory belonging to the selected store and product.
-
-Stock should never be assumed to be global across all stores.
 
 ---
 
@@ -309,16 +275,6 @@ JavaScript is used mainly for improving the user experience.
 ## 5. Store Selection Determines Available Stock
 
 When creating a sale, the selected store determines which inventory quantity is displayed for the selected product.
-
-The system therefore does not use:
-
-```php
-Product::stock
-```
-
-as the source of truth.
-
-Instead, inventory is retrieved for the selected store and product.
 
 ## 6. Eloquent Relationships
 
