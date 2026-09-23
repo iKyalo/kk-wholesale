@@ -10,6 +10,8 @@ class StockTransfer extends Model
         'transfer_number',
         'from_branch_id',
         'to_branch_id',
+        'from_store_id',
+        'to_store_id',
         'user_id',
         'status',
         'notes',
@@ -41,5 +43,15 @@ class StockTransfer extends Model
     public function items()
     {
         return $this->hasMany(StockTransferItem::class);
+    }
+
+    public function sourceStore()
+    {
+        return $this->belongsTo(Store::class, 'from_store_id');
+    }
+
+    public function destinationStore()
+    {
+        return $this->belongsTo(Store::class, 'to_store_id');
     }
 }

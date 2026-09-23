@@ -14,17 +14,20 @@ return new class extends Migration
         Schema::create('stock_transfers', function (Blueprint $table) {
             $table->id();
         
-            $table->string('transfer_number')->unique();
+            $table->string('transfer_number')->unique()->nullable();
         
             $table->foreignId('from_branch_id')
+                ->nullable()
                 ->constrained('branches')
                 ->restrictOnDelete();
         
             $table->foreignId('to_branch_id')
+                ->nullable()
                 ->constrained('branches')
                 ->restrictOnDelete();
         
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
         

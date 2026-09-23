@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Product;
+use App\Models\Inventory;
 use App\Models\Sale;
 use App\Models\Store;
 use Illuminate\Http\Request;
@@ -99,5 +100,21 @@ class SalesController extends Controller
             'storeTransactionCount',
             'storeAverageSaleValue'
         ));
+    }
+
+    public function productStock(Request $request)
+    {
+        $request->validate([
+            'store_id' => ['required', 'integer', 'exists:stores,id'],
+        ]);
+
+        $stock = Inventory::where('store_id', $request->store_id)
+            ->get()
+            ->keyBy('product_id')
+            ->map(function ($inventory) {
+                return (int) $inventory->quantity;
+            });
+
+        return response()->json($stock);
     }
 }

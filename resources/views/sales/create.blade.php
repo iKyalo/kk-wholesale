@@ -54,10 +54,14 @@
 
                                     <div class="col-md-6">
                                         <label for="store_id" class="form-label">Store</label>
+
                                         <select class="form-select @error('store_id') is-invalid @enderror" id="store_id"
                                             name="store_id" required>
-                                            <option value="" disabled {{ old('store_id') ? '' : 'selected' }}>Select a
-                                                store</option>
+
+                                            <option value="" disabled {{ old('store_id') ? '' : 'selected' }}>
+                                                Select a store
+                                            </option>
+
                                             @foreach ($stores as $store)
                                                 <option value="{{ $store->id }}" data-branch-id="{{ $store->branch_id }}"
                                                     {{ (string) old('store_id') === (string) $store->id ? 'selected' : '' }}>
@@ -65,6 +69,11 @@
                                                 </option>
                                             @endforeach
                                         </select>
+
+                                        <div id="stockLoading" class="small text-muted mt-1 d-none">
+                                            Loading stock...
+                                        </div>
+
                                         @error('store_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -152,32 +161,42 @@
                                             @forelse ($products as $product)
                                                 <tr class="product-row" data-id="{{ $product->id }}"
                                                     data-name="{{ $product->name }}" data-sku="{{ $product->sku }}"
-                                                    data-price="{{ $product->selling_price }}"
-                                                    data-stock="{{ $product->available_stock ?? 0 }}">
-                                                    <td class="product-name fw-semibold">{{ $product->name }}</td>
-                                                    <td class="product-sku">{{ $product->sku }}</td>
-                                                    <td class="text-end">KSh
-                                                        {{ number_format($product->selling_price, 2) }}</td>
+                                                    data-price="{{ $product->selling_price }}" data-stock="0">
+
+                                                    <td class="product-name fw-semibold">
+                                                        {{ $product->name }}
+                                                    </td>
+
+                                                    <td class="product-sku">
+                                                        {{ $product->sku }}
+                                                    </td>
+
                                                     <td class="text-end">
-                                                        {{ number_format($product->available_stock ?? 0) }}</td>
+                                                        KSh {{ number_format($product->selling_price, 2) }}
+                                                    </td>
+
+                                                    <td class="text-end available-stock">
+                                                        0
+                                                    </td>
+
                                                     <td>
                                                         <input type="number"
                                                             class="form-control form-control-sm product-qty-input"
-                                                            min="1" max="{{ $product->available_stock ?? 0 }}"
-                                                            value="1">
+                                                            min="1" max="0" value="1" disabled>
                                                     </td>
+
                                                     <td>
                                                         <button type="button"
-                                                            class="btn btn-sm btn-outline-primary add-item-btn"
-                                                            {{ ($product->available_stock ?? 0) <= 0 ? 'disabled' : '' }}>
+                                                            class="btn btn-sm btn-outline-primary add-item-btn" disabled>
                                                             Add
                                                         </button>
                                                     </td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6" class="text-center text-muted py-4">No products
-                                                        available.</td>
+                                                    <td colspan="6" class="text-center text-muted py-4">
+                                                        No products available.
+                                                    </td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -634,5 +653,197 @@
             // Initial render
             render();
         });
+
+        const branchSelect = document.getElementById('branch_id');
+        const storeSelect = document.getElementById('store_id');
+        const stockLoading = document.getElementById('stockLoading');
+
+        /**
+         * Filter stores according to selected branch.
+         */
+        function filterStores() {
+
+            const branchId = branchSelect.value;
+
+            Array.from(storeSelect.options).forEach(option => {
+
+                if (!option.value) {
+                    option.hidden = false;
+                    return;
+                }
+
+                option.hidden = option.dataset.branchId !== branchId;
+            });
+
+            // Reset store selection
+            storeSelect.value = '';
+
+            // Reset all product stock
+            resetProductStock();
+        }
+
+
+        /**
+         * Reset product stock to zero.
+         */
+        function resetProductStock() {
+
+            document.querySelectorAll('.product-row').forEach(row => {
+
+                const stockCell = row.querySelector('.available-stock');
+                const qtyInput = row.querySelector('.product-qty-input');
+                const addButton = row.querySelector('.add-item-btn');
+
+                row.dataset.stock = 0;
+
+                stockCell.textContent = '0';
+
+                qtyInput.max = 0;
+                qtyInput.value = 1;
+                qtyInput.disabled = true;
+
+                addButton.disabled = true;
+            });
+        }
+
+
+        /**
+         * Load inventory for selected store.
+         */
+        async function loadStoreStock() {
+
+            const storeId = storeSelect.value;
+
+            if (!storeId) {
+                resetProductStock();
+                return;
+            }
+
+            stockLoading.classList.remove('d-none');
+
+            try {
+
+                const url = new URL(
+                    "{{ route('sales.products.stock') }}",
+                    window.location.origin
+                );
+
+                url.searchParams.set('store_id', storeId);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load product stock.');
+                }
+
+                const stock = await response.json();
+
+                updateProductStock(stock);
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert('Unable to load product stock. Please try again.');
+
+                resetProductStock();
+
+            } finally {
+
+                stockLoading.classList.add('d-none');
+            }
+        }
+
+
+        /**
+         * Update every product row with the stock
+         * belonging to the selected store.
+         */
+        function updateProductStock(stock) {
+
+            document.querySelectorAll('.product-row').forEach(row => {
+
+                const productId = row.dataset.id;
+
+                const availableStock = parseInt(
+                    stock[productId] ?? 0
+                );
+
+                const stockCell = row.querySelector('.available-stock');
+                const qtyInput = row.querySelector('.product-qty-input');
+                const addButton = row.querySelector('.add-item-btn');
+
+                // Store stock on row
+                row.dataset.stock = availableStock;
+
+                // Display stock
+                stockCell.textContent = availableStock.toLocaleString();
+
+                // Update quantity input
+                qtyInput.max = availableStock;
+                qtyInput.value = availableStock > 0 ? 1 : 0;
+                qtyInput.disabled = availableStock <= 0;
+
+                // Enable/disable Add button
+                addButton.disabled = availableStock <= 0;
+            });
+        }
+
+
+        /**
+         * Branch changed.
+         */
+        branchSelect.addEventListener('change', function() {
+            filterStores();
+        });
+
+
+        /**
+         * Store changed.
+         */
+        storeSelect.addEventListener('change', function() {
+            loadStoreStock();
+        });
+
+
+        /**
+         * Prevent quantity from exceeding available stock.
+         */
+        document.addEventListener('input', function(event) {
+
+            if (!event.target.classList.contains('product-qty-input')) {
+                return;
+            }
+
+            const input = event.target;
+
+            const max = parseInt(input.max || 0);
+            let value = parseInt(input.value || 0);
+
+            if (value < 1) {
+                value = 1;
+            }
+
+            if (value > max) {
+                value = max;
+            }
+
+            input.value = value;
+        });
+
+
+        /**
+         * Load stock automatically if an old store exists
+         * after validation failure.
+         */
+        if (storeSelect.value) {
+            loadStoreStock();
+        }
     </script>
 @endsection

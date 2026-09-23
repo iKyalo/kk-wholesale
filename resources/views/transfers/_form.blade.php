@@ -3,104 +3,132 @@
     {{-- Transfer Information --}}
     <div class="col-12">
         <h2 class="h6 fw-bold mb-3">Transfer Information</h2>
+
         <div class="row g-3">
 
+            {{-- Source Branch --}}
             <div class="col-md-3">
-                <label for="source_branch_id" class="form-label">Source Branch</label>
-                <select class="form-select @error('source_branch_id') is-invalid @enderror" id="source_branch_id"
-                    name="source_branch_id" required>
-                    <option value="" disabled
-                        {{ old('source_branch_id', $transfer->sourceStore->branch_id ?? '') ? '' : 'selected' }}>Select
-                        branch</option>
+                <label for="source_branch_id" class="form-label">
+                    Source Branch
+                </label>
+
+                <select class="form-select" id="source_branch_id">
+                    <option value="">Select branch</option>
+
                     @foreach ($branches as $branch)
-                        <option value="{{ $branch->id }}"
-                            {{ (string) old('source_branch_id', $transfer->sourceStore->branch_id ?? '') === (string) $branch->id ? 'selected' : '' }}>
+                        <option value="{{ $branch->id }}">
                             {{ $branch->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('source_branch_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
             </div>
 
+            {{-- Source Store --}}
             <div class="col-md-3">
-                <label for="source_store_id" class="form-label">Source Store</label>
-                <select class="form-select @error('source_store_id') is-invalid @enderror" id="source_store_id"
-                    name="source_store_id" required>
-                    <option value="" disabled
-                        {{ old('source_store_id', $transfer->source_store_id ?? '') ? '' : 'selected' }}>Select store
-                    </option>
+                <label for="from_store_id" class="form-label">
+                    Source Store
+                </label>
+
+                <select class="form-select @error('from_store_id') is-invalid @enderror" id="from_store_id"
+                    name="from_store_id" required>
+                    <option value="">Select store</option>
+
                     @foreach ($stores as $store)
                         <option value="{{ $store->id }}" data-branch-id="{{ $store->branch_id }}"
-                            {{ (string) old('source_store_id', $transfer->source_store_id ?? '') === (string) $store->id ? 'selected' : '' }}>
+                            {{ (string) old('from_store_id', $transfer->from_store_id ?? '') === (string) $store->id ? 'selected' : '' }}>
                             {{ $store->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('source_store_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
+
+                @error('from_store_id')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
                 @enderror
             </div>
 
+            {{-- Destination Branch --}}
             <div class="col-md-3">
-                <label for="destination_branch_id" class="form-label">Destination Branch</label>
-                <select class="form-select @error('destination_branch_id') is-invalid @enderror"
-                    id="destination_branch_id" name="destination_branch_id" required>
-                    <option value="" disabled
-                        {{ old('destination_branch_id', $transfer->destinationStore->branch_id ?? '') ? '' : 'selected' }}>
-                        Select branch</option>
+                <label for="destination_branch_id" class="form-label">
+                    Destination Branch
+                </label>
+
+                <select class="form-select" id="destination_branch_id">
+                    <option value="">Select branch</option>
+
                     @foreach ($branches as $branch)
-                        <option value="{{ $branch->id }}"
-                            {{ (string) old('destination_branch_id', $transfer->destinationStore->branch_id ?? '') === (string) $branch->id ? 'selected' : '' }}>
+                        <option value="{{ $branch->id }}">
                             {{ $branch->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('destination_branch_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
             </div>
 
+            {{-- Destination Store --}}
             <div class="col-md-3">
-                <label for="destination_store_id" class="form-label">Destination Store</label>
-                <select class="form-select @error('destination_store_id') is-invalid @enderror"
-                    id="destination_store_id" name="destination_store_id" required>
-                    <option value="" disabled
-                        {{ old('destination_store_id', $transfer->destination_store_id ?? '') ? '' : 'selected' }}>
-                        Select store</option>
+                <label for="to_store_id" class="form-label">
+                    Destination Store
+                </label>
+
+                <select class="form-select @error('to_store_id') is-invalid @enderror" id="to_store_id"
+                    name="to_store_id" required>
+                    <option value="">Select store</option>
+
                     @foreach ($stores as $store)
                         <option value="{{ $store->id }}" data-branch-id="{{ $store->branch_id }}"
-                            {{ (string) old('destination_store_id', $transfer->destination_store_id ?? '') === (string) $store->id ? 'selected' : '' }}>
+                            {{ (string) old('to_store_id', $transfer->to_store_id ?? '') === (string) $store->id ? 'selected' : '' }}>
                             {{ $store->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('destination_store_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
+
+                @error('to_store_id')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
                 @enderror
-                <div id="sameStoreWarning" class="form-text text-danger d-none">Source and destination stores must be
-                    different.</div>
+
+                <div id="sameStoreWarning" class="form-text text-danger d-none">
+                    Source and destination stores must be different.
+                </div>
             </div>
 
+            {{-- Transfer Date --}}
             <div class="col-md-4">
-                <label for="transfer_date" class="form-label">Transfer Date</label>
+                <label for="transfer_date" class="form-label">
+                    Transfer Date
+                </label>
+
                 <input type="date" class="form-control @error('transfer_date') is-invalid @enderror"
                     id="transfer_date" name="transfer_date"
-                    value="{{ old('transfer_date', isset($transfer) ? $transfer->transfer_date->format('Y-m-d') : now()->format('Y-m-d')) }}"
+                    value="{{ old(
+                        'transfer_date',
+                        isset($transfer) ? optional($transfer->transfered_at)->format('Y-m-d') : now()->format('Y-m-d'),
+                    ) }}"
                     required>
+
                 @error('transfer_date')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
                 @enderror
             </div>
 
+            {{-- Notes --}}
             <div class="col-md-8">
-                <label for="notes" class="form-label">Notes <span
-                        class="text-muted fw-normal">(optional)</span></label>
+                <label for="notes" class="form-label">
+                    Notes
+                    <span class="text-muted fw-normal">(optional)</span>
+                </label>
+
                 <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes" rows="1"
                     placeholder="Reason for transfer or handling instructions">{{ old('notes', $transfer->notes ?? '') }}</textarea>
+
                 @error('notes')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
                 @enderror
             </div>
 
@@ -292,13 +320,13 @@
             // Source branch → source store
             filterStores(
                 'source_branch_id',
-                'source_store_id'
+                'from_store_id'
             );
 
             // Destination branch → destination store
             filterStores(
                 'destination_branch_id',
-                'destination_store_id'
+                'to_store_id'
             );
 
         });
@@ -308,9 +336,9 @@
             let nextRowId = 1;
 
             const sourceBranchSelect = document.getElementById('source_branch_id');
-            const sourceStoreSelect = document.getElementById('source_store_id');
+            const sourceStoreSelect = document.getElementById('from_store_id');
             const destinationBranchSelect = document.getElementById('destination_branch_id');
-            const destinationStoreSelect = document.getElementById('destination_store_id');
+            const destinationStoreSelect = document.getElementById('to_store_id');
             const sameStoreWarning = document.getElementById('sameStoreWarning');
 
             const catalogRows = document.querySelectorAll('.product-row');

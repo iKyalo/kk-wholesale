@@ -86,6 +86,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/by-product', 'byProduct')->name('by-product');
             Route::get('/by-branch', 'byBranch')->name('by-branch');
 
+            Route::get('/products/stock', 'productStock')->name('products.stock');
+
         });
 
 
@@ -131,6 +133,9 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
+
+            Route::get('/{transfer}', 'show')->name('show');
+
 
         });
 
