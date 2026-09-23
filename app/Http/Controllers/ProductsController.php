@@ -11,10 +11,35 @@ use Illuminate\Validation\Rule;
 
 class ProductsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
+        $query = Product::query();
 
+        // Search by product name or SKU
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $products = $query
+            ->latest()
+            ->get();
+
+        // Summary cards
         $totalProducts = Product::count();
 
         $activeProducts = Product::where('is_active', true)->count();
@@ -53,11 +78,17 @@ class ProductsController extends Controller
             'barcode'       => ['nullable', 'string', 'max:100', 'unique:products,barcode'],
             'category_id'   => ['nullable', 'exists:categories,id'],
             'description'   => ['nullable', 'string'],
-            'cost_price'    => ['required', 'numeric', 'min:0'],
-            'selling_price' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => [
+                'required',
+                'numeric',
+                'gt:cost_price',
+            ],
             'minimum_stock' => ['required', 'integer', 'min:0'],
             'is_active'     => ['required', 'boolean'],
             'image'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+        ], [
+            'selling_price.gt' => 'Selling price must be greater than cost price.',
         ]);
 
         DB::transaction(function () use ($request, $validated) {

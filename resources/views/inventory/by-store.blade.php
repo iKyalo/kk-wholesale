@@ -104,7 +104,7 @@
                                 <tbody>
                                     @forelse ($inventories as $inventory)
                                         @php
-                                            $minLevel = $inventory->product->minimum_stock_level ?? 0;
+                                            $minLevel = $inventory->product->minimum_stock ?? 0;
                                             $stockValue = $inventory->quantity * ($inventory->product->cost_price ?? 0);
                                         @endphp
                                         <tr>
@@ -131,10 +131,10 @@
                                                         class="btn btn-sm btn-outline-secondary" title="View Inventory">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('inventory.edit-stock', ['inventory' => $inventory->id]) }}"
+                                                    {{-- <a href="{{ route('inventory.edit-stock', ['inventory' => $inventory->id]) }}"
                                                         class="btn btn-sm btn-outline-primary" title="Update Stock">
                                                         <i class="bi bi-pencil-square"></i>
-                                                    </a>
+                                                    </a> --}}
                                                 </div>
                                             </td>
                                         </tr>

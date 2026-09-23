@@ -142,7 +142,7 @@
                             <tbody>
                                 @forelse ($inventories as $inventory)
                                     @php
-                                        $minLevel = $inventory->product->minimum_stock_level ?? 0;
+                                        $minLevel = $inventory->product->minimum_stock ?? 0;
                                         $value = $inventory->quantity * ($inventory->product->cost_price ?? 0);
                                     @endphp
                                     <tr>

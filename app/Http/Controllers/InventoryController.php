@@ -18,9 +18,148 @@ class InventoryController extends Controller
     {
         $branches = Branch::all();
         $stores = Store::all();
-        $inventories = Inventory::all();
-        
-        return view('inventory.index', compact('branches', 'stores', 'inventories'));
+
+        /*
+        |--------------------------------------------------------------------------
+        | Base Query
+        |--------------------------------------------------------------------------
+        */
+
+        $query = Inventory::query()
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->with([
+                'product',
+                'store.branch',
+            ])
+            ->select('inventories.*');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filters
+        |--------------------------------------------------------------------------
+        */
+
+        if (request('search')) {
+            $search = request('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.sku', 'like', "%{$search}%");
+            });
+        }
+
+        if (request('branch_id')) {
+            $query->where(
+                'inventories.branch_id',
+                request('branch_id')
+            );
+        }
+
+        if (request('store_id')) {
+            $query->where(
+                'inventories.store_id',
+                request('store_id')
+            );
+        }
+
+        if (request('status')) {
+            switch (request('status')) {
+                case 'in_stock':
+                    $query->whereColumn(
+                        'inventories.quantity',
+                        '>',
+                        'products.minimum_stock'
+                    );
+                    break;
+
+                case 'low_stock':
+                    $query->whereColumn(
+                        'inventories.quantity',
+                        '<=',
+                        'products.minimum_stock'
+                    )->where(
+                        'inventories.quantity',
+                        '>',
+                        0
+                    );
+                    break;
+
+                case 'out_of_stock':
+                    $query->where(
+                        'inventories.quantity',
+                        '<=',
+                        0
+                    );
+                    break;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Inventory Summary
+        |--------------------------------------------------------------------------
+        */
+
+        $summaryQuery = clone $query;
+
+        // Remove inventories.* before aggregate queries
+        $summaryQuery->select([]);
+
+        $totalProducts = (clone $summaryQuery)
+            ->distinct()
+            ->count('inventories.product_id');
+
+        $totalUnits = (clone $summaryQuery)
+            ->sum('inventories.quantity');
+
+        $lowStockCount = (clone $summaryQuery)
+            ->whereColumn(
+                'inventories.quantity',
+                '<=',
+                'products.minimum_stock'
+            )
+            ->where(
+                'inventories.quantity',
+                '>',
+                0
+            )
+            ->count('inventories.id');
+
+        $outOfStockCount = (clone $summaryQuery)
+            ->where(
+                'inventories.quantity',
+                '<=',
+                0
+            )
+            ->count('inventories.id');
+
+        $totalInventoryValue = (clone $summaryQuery)
+            ->selectRaw(
+                'COALESCE(SUM(inventories.quantity * products.cost_price), 0) as total'
+            )
+            ->value('total');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Paginated Inventory
+        |--------------------------------------------------------------------------
+        */
+
+        $inventories = $query
+            ->latest('inventories.created_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('inventory.index', compact(
+            'branches',
+            'stores',
+            'inventories',
+            'totalProducts',
+            'totalUnits',
+            'lowStockCount',
+            'outOfStockCount',
+            'totalInventoryValue'
+        ));
     }
 
     public function show(Inventory $inventory) 

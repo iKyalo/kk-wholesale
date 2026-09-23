@@ -10,10 +10,41 @@ use Illuminate\Validation\Rule;
 
 class StoresController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stores = Store::with('branch')->get();
-        $branches = Branch::all();
+        $branches = Branch::orderBy('name')->get();
+
+        $stores = Store::query()
+            ->with('branch')
+            ->withCount('users')
+
+            // Search by store name, code, or location
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('location', 'like', "%{$search}%");
+                });
+            })
+
+            // Filter by branch
+            ->when($request->filled('branch_id'), function ($query) use ($request) {
+                $query->where('branch_id', $request->branch_id);
+            })
+
+            // Filter by status
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where(
+                    'is_active',
+                    $request->status === 'active' ? 1 : 0
+                );
+            })
+
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('stores.index', compact('stores', 'branches'));
     }

@@ -236,7 +236,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ isset($categories) ? 8 : 7 }}"
+                                        <td colspan="{{ isset($categories) ? 9 : 8 }}"
                                             class="text-center text-muted py-5">
                                             <i class="bi bi-box-seam fs-2 d-block mb-2"></i>
                                             No products found. Try adjusting your filters or create a new product.
