@@ -109,9 +109,9 @@ http://127.0.0.1:8000
 Login with the following credentials:
 
 ```text
-admin@kkwholesale.co.ke
+email: admin@kkwholesale.co.ke
 
-password
+password: password
 ```
 
 ---
