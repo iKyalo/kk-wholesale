@@ -59,7 +59,7 @@
                                             <option value="" disabled {{ old('store_id') ? '' : 'selected' }}>Select a
                                                 store</option>
                                             @foreach ($stores as $store)
-                                                <option value="{{ $store->id }}"
+                                                <option value="{{ $store->id }}" data-branch-id="{{ $store->branch_id }}"
                                                     {{ (string) old('store_id') === (string) $store->id ? 'selected' : '' }}>
                                                     {{ $store->name }}
                                                 </option>
@@ -256,241 +256,56 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                let items = [];
-                let nextRowId = 1;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let items = [];
+            let nextRowId = 1;
 
-                const catalogRows = document.querySelectorAll('.product-row');
-                const itemsBody = document.getElementById('saleItemsTableBody');
-                const hiddenInputsContainer = document.getElementById('saleItemsHiddenInputs');
-                const noItemsRow = document.getElementById('noItemsRow');
-                const productSearchInput = document.getElementById('productSearchInput');
-                const saleForm = document.getElementById('saleForm');
+            const catalogRows = document.querySelectorAll('.product-row');
+            const itemsBody = document.getElementById('saleItemsTableBody');
+            const hiddenInputsContainer = document.getElementById('saleItemsHiddenInputs');
+            const noItemsRow = document.getElementById('noItemsRow');
+            const productSearchInput = document.getElementById('productSearchInput');
+            const saleForm = document.getElementById('saleForm');
 
-                function formatMoney(amount) {
-                    return 'KSh ' + Number(amount || 0).toLocaleString('en-KE', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
+            function formatMoney(amount) {
+                return 'KSh ' + Number(amount || 0).toLocaleString('en-KE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
 
-                function calculateLineTotal(item) {
-                    const total = (item.unitPrice * item.quantity) - item.discount;
-                    return total > 0 ? total : 0;
-                }
+            function calculateLineTotal(item) {
+                const total = (Number(item.unitPrice) * Number(item.quantity)) -
+                    Number(item.discount || 0);
 
-                function render() {
-                    itemsBody.innerHTML = '';
-                    hiddenInputsContainer.innerHTML = '';
+                return total > 0 ? total : 0;
+            }
 
-                    if (items.length === 0) {
-                        itemsBody.appendChild(noItemsRow);
-                    } else {
-                        items.forEach(function(item, index) {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                    <td class="fw-semibold">${item.name}</td>
-                    <td>${item.sku}</td>
-                    <td class="text-end">${formatMoney(item.unitPrice)}</td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm item-qty-input" min="1" max="${item.stock}" value="${item.quantity}" data-row-id="${item.rowId}">
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm item-discount-input" min="0" step="0.01" value="${item.discount}" data-row-id="${item.rowId}">
-                    </td>
-                    <td class="text-end fw-semibold">${formatMoney(calculateLineTotal(item))}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn" data-row-id="${item.rowId}">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </td>
-                `;
-                            itemsBody.appendChild(row);
+            function updateSummary() {
+                let subtotal = 0;
+                let discount = 0;
 
-                            ['product_id', 'quantity', 'unit_price', 'discount'].forEach(function(field) {
-                                const input = document.createElement('input');
-                                input.type = 'hidden';
-                                input.name = `items[${index}][${field}]`;
-                                input.value = field === 'product_id' ? item.productId :
-                                    field === 'quantity' ? item.quantity :
-                                    field === 'unit_price' ? item.unitPrice :
-                                    item.discount;
-                                hiddenInputsContainer.appendChild(input);
-                            });
-                        });
-                    }
-
-                    updateSummary();
-                    updateCatalogButtons();
-                    bindItemRowEvents();
-                }
-
-                function updateSummary() {
-                    let subtotal = 0;
-                    let discount = 0;
-
-                    items.forEach(function(item) {
-                        subtotal += item.unitPrice * item.quantity;
-                        discount += Number(item.discount || 0);
-                    });
-
-                    const total = subtotal - discount > 0 ? subtotal - discount : 0;
-
-                    document.getElementById('summarySubtotal').textContent = formatMoney(subtotal);
-                    document.getElementById('summaryDiscount').textContent = formatMoney(discount);
-                    document.getElementById('summaryTotal').textContent = formatMoney(total);
-                }
-
-                function bindItemRowEvents() {
-                    document.querySelectorAll('.item-qty-input').forEach(function(input) {
-                        input.addEventListener('change', function() {
-                            const rowId = Number(input.dataset.rowId);
-                            const item = items.find(function(i) {
-                                return i.rowId === rowId;
-                            });
-                            if (!item) return;
-
-                            let qty = parseInt(input.value, 10) || 1;
-                            if (qty > item.stock) {
-                                qty = item.stock;
-                            }
-                            if (qty < 1) {
-                                qty = 1;
-                            }
-                            item.quantity = qty;
-                            render();
-                        });
-                    });
-
-                    document.querySelectorAll('.item-discount-input').forEach(function(input) {
-                        input.addEventListener('change', function() {
-                            const rowId = Number(input.dataset.rowId);
-                            const item = items.find(function(i) {
-                                return i.rowId === rowId;
-                            });
-                            if (!item) return;
-
-                            let discount = parseFloat(input.value) || 0;
-                            const maxDiscount = item.unitPrice * item.quantity;
-                            if (discount > maxDiscount) {
-                                discount = maxDiscount;
-                            }
-                            if (discount < 0) {
-                                discount = 0;
-                            }
-                            item.discount = discount;
-                            render();
-                        });
-                    });
-
-                    document.querySelectorAll('.remove-item-btn').forEach(function(button) {
-                        button.addEventListener('click', function() {
-                            const rowId = Number(button.dataset.rowId);
-                            items = items.filter(function(i) {
-                                return i.rowId !== rowId;
-                            });
-                            render();
-                        });
-                    });
-                }
-
-                catalogRows.forEach(function(row) {
-                    const addButton = row.querySelector('.add-item-btn');
-
-                    if (!addButton) {
-                        return;
-                    }
-
-                    addButton.addEventListener('click', function() {
-                        const productId = row.dataset.id;
-                        const productName = row.dataset.name;
-                        const productSku = row.dataset.sku;
-                        const unitPrice = parseFloat(row.dataset.price) || 0;
-                        const stock = parseInt(row.dataset.stock, 10) || 0;
-
-                        const qtyInput = row.querySelector('.product-qty-input');
-
-                        if (stock <= 0) {
-                            alert('This product is out of stock.');
-                            return;
-                        }
-
-                        let quantity = parseInt(qtyInput.value, 10);
-
-                        if (isNaN(quantity) || quantity < 1) {
-                            quantity = 1;
-                        }
-
-                        if (quantity > stock) {
-                            quantity = stock;
-                        }
-
-                        // Check whether the product is already in the sale
-                        const existingItem = items.find(function(item) {
-                            return item.productId === productId;
-                        });
-
-                        if (existingItem) {
-                            // Add to existing quantity, but never exceed available stock
-                            existingItem.quantity = Math.min(
-                                existingItem.quantity + quantity,
-                                existingItem.stock
-                            );
-
-                            // If already at maximum stock
-                            if (existingItem.quantity === existingItem.stock) {
-                                // Optional visual feedback
-                                addButton.textContent = 'Max';
-                            }
-                        } else {
-                            // Add new product to the sale
-                            items.push({
-                                rowId: nextRowId++,
-                                productId: productId,
-                                name: productName,
-                                sku: productSku,
-                                unitPrice: unitPrice,
-                                quantity: quantity,
-                                discount: 0,
-                                stock: stock
-                            });
-                        }
-
-                        // Reset catalog quantity input
-                        qtyInput.value = 1;
-
-                        // Rebuild sale items table
-                        render();
-                    });
+                items.forEach(function(item) {
+                    subtotal += Number(item.unitPrice) * Number(item.quantity);
+                    discount += Number(item.discount || 0);
                 });
 
-                if (productSearchInput) {
-                    productSearchInput.addEventListener('input', function() {
-                        const term = productSearchInput.value.trim().toLowerCase();
-                        catalogRows.forEach(function(row) {
-                            const name = row.querySelector('.product-name').textContent.toLowerCase();
-                            const sku = row.querySelector('.product-sku').textContent.toLowerCase();
-                            row.style.display = (name.includes(term) || sku.includes(term)) ? '' :
-                                'none';
-                        });
-                    });
-                }
+                const total = Math.max(subtotal - discount, 0);
 
-                saleForm.addEventListener('submit', function(event) {
-                    if (items.length === 0) {
-                        event.preventDefault();
-                        alert('Please add at least one product to the sale before completing it.');
-                    }
-                });
+                document.getElementById('summarySubtotal').textContent =
+                    formatMoney(subtotal);
 
-                render();
-            });
+                document.getElementById('summaryDiscount').textContent =
+                    formatMoney(discount);
+
+                document.getElementById('summaryTotal').textContent =
+                    formatMoney(total);
+            }
 
             function updateCatalogButtons() {
                 catalogRows.forEach(function(row) {
-                    const productId = row.dataset.id;
+                    const productId = String(row.dataset.id);
                     const stock = parseInt(row.dataset.stock, 10) || 0;
                     const addButton = row.querySelector('.add-item-btn');
 
@@ -498,11 +313,11 @@
                         return;
                     }
 
-                    const item = items.find(function(i) {
-                        return i.productId === productId;
+                    const item = items.find(function(item) {
+                        return String(item.productId) === productId;
                     });
 
-                    const currentQuantity = item ? item.quantity : 0;
+                    const currentQuantity = item ? Number(item.quantity) : 0;
                     const remainingStock = stock - currentQuantity;
 
                     if (remainingStock <= 0) {
@@ -514,6 +329,310 @@
                     }
                 });
             }
-        </script>
-    @endpush
+
+            function bindItemRowEvents() {
+                document.querySelectorAll('.item-qty-input').forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        const rowId = Number(input.dataset.rowId);
+
+                        const item = items.find(function(item) {
+                            return item.rowId === rowId;
+                        });
+
+                        if (!item) {
+                            return;
+                        }
+
+                        let quantity = parseInt(input.value, 10) || 1;
+
+                        quantity = Math.max(1, quantity);
+                        quantity = Math.min(quantity, item.stock);
+
+                        item.quantity = quantity;
+
+                        render();
+                    });
+                });
+
+                document.querySelectorAll('.item-discount-input').forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        const rowId = Number(input.dataset.rowId);
+
+                        const item = items.find(function(item) {
+                            return item.rowId === rowId;
+                        });
+
+                        if (!item) {
+                            return;
+                        }
+
+                        let discount = parseFloat(input.value) || 0;
+
+                        const maxDiscount =
+                            Number(item.unitPrice) * Number(item.quantity);
+
+                        discount = Math.max(0, discount);
+                        discount = Math.min(discount, maxDiscount);
+
+                        item.discount = discount;
+
+                        render();
+                    });
+                });
+
+                document.querySelectorAll('.remove-item-btn').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        const rowId = Number(button.dataset.rowId);
+
+                        items = items.filter(function(item) {
+                            return item.rowId !== rowId;
+                        });
+
+                        render();
+                    });
+                });
+            }
+
+            const branchSelect = document.getElementById('branch_id');
+            const storeSelect = document.getElementById('store_id');
+
+            function filterStoresByBranch() {
+                const branchId = branchSelect.value;
+                const currentStoreId = storeSelect.value;
+
+                // Reset store selection
+                storeSelect.value = '';
+
+                let hasVisibleStores = false;
+
+                Array.from(storeSelect.options).forEach(function(option) {
+                    // Always show the placeholder
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+
+                    const storeBranchId = option.dataset.branchId;
+
+                    if (storeBranchId === branchId) {
+                        option.hidden = false;
+                        hasVisibleStores = true;
+                    } else {
+                        option.hidden = true;
+                    }
+                });
+
+                // If the previously selected store belongs to this branch,
+                // keep it selected (useful after validation errors).
+                if (currentStoreId) {
+                    const selectedOption = Array.from(storeSelect.options).find(function(option) {
+                        return option.value === currentStoreId &&
+                            option.dataset.branchId === branchId;
+                    });
+
+                    if (selectedOption) {
+                        storeSelect.value = currentStoreId;
+                    }
+                }
+
+                // Disable store selection until a branch is selected
+                storeSelect.disabled = !branchId || !hasVisibleStores;
+            }
+
+            branchSelect.addEventListener('change', function() {
+                filterStoresByBranch();
+            });
+
+            // Run once when the page loads
+            filterStoresByBranch();
+
+            function render() {
+                itemsBody.innerHTML = '';
+                hiddenInputsContainer.innerHTML = '';
+
+                if (items.length === 0) {
+                    itemsBody.appendChild(noItemsRow);
+                } else {
+                    items.forEach(function(item, index) {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+                        <td class="fw-semibold">${item.name}</td>
+
+                        <td>${item.sku}</td>
+
+                        <td class="text-end">
+                            ${formatMoney(item.unitPrice)}
+                        </td>
+
+                        <td>
+                            <input
+                                type="number"
+                                class="form-control form-control-sm item-qty-input"
+                                min="1"
+                                max="${item.stock}"
+                                value="${item.quantity}"
+                                data-row-id="${item.rowId}"
+                            >
+                        </td>
+
+                        <td>
+                            <input
+                                type="number"
+                                class="form-control form-control-sm item-discount-input"
+                                min="0"
+                                step="0.01"
+                                value="${item.discount}"
+                                data-row-id="${item.rowId}"
+                            >
+                        </td>
+
+                        <td class="text-end fw-semibold">
+                            ${formatMoney(calculateLineTotal(item))}
+                        </td>
+
+                        <td>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger remove-item-btn"
+                                data-row-id="${item.rowId}"
+                            >
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </td>
+                    `;
+
+                        itemsBody.appendChild(row);
+
+                        // Hidden inputs submitted to Laravel
+                        const fields = {
+                            product_id: item.productId,
+                            quantity: item.quantity,
+                            unit_price: item.unitPrice,
+                            discount: item.discount
+                        };
+
+                        Object.keys(fields).forEach(function(field) {
+                            const input = document.createElement('input');
+
+                            input.type = 'hidden';
+                            input.name = `items[${index}][${field}]`;
+                            input.value = fields[field];
+
+                            hiddenInputsContainer.appendChild(input);
+                        });
+                    });
+                }
+
+                updateSummary();
+                updateCatalogButtons();
+                bindItemRowEvents();
+            }
+
+            // Add product buttons
+            catalogRows.forEach(function(row) {
+                const addButton = row.querySelector('.add-item-btn');
+
+                if (!addButton) {
+                    return;
+                }
+
+                addButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    const productId = String(row.dataset.id);
+                    const productName = row.dataset.name;
+                    const productSku = row.dataset.sku;
+
+                    const unitPrice =
+                        parseFloat(row.dataset.price) || 0;
+
+                    const stock =
+                        parseInt(row.dataset.stock, 10) || 0;
+
+                    const qtyInput =
+                        row.querySelector('.product-qty-input');
+
+                    if (stock <= 0) {
+                        alert('This product is out of stock.');
+                        return;
+                    }
+
+                    let quantity =
+                        parseInt(qtyInput.value, 10) || 1;
+
+                    quantity = Math.max(1, quantity);
+                    quantity = Math.min(quantity, stock);
+
+                    // Check if product already exists
+                    const existingItem = items.find(function(item) {
+                        return String(item.productId) === productId;
+                    });
+
+                    if (existingItem) {
+                        existingItem.quantity = Math.min(
+                            Number(existingItem.quantity) + quantity,
+                            existingItem.stock
+                        );
+                    } else {
+                        items.push({
+                            rowId: nextRowId++,
+                            productId: productId,
+                            name: productName,
+                            sku: productSku,
+                            unitPrice: unitPrice,
+                            quantity: quantity,
+                            discount: 0,
+                            stock: stock
+                        });
+                    }
+
+                    // Reset quantity
+                    qtyInput.value = 1;
+
+                    // Re-render sale items
+                    render();
+                });
+            });
+
+            // Product search
+            if (productSearchInput) {
+                productSearchInput.addEventListener('input', function() {
+                    const term =
+                        productSearchInput.value.trim().toLowerCase();
+
+                    catalogRows.forEach(function(row) {
+                        const name =
+                            row.querySelector('.product-name')
+                            .textContent
+                            .toLowerCase();
+
+                        const sku =
+                            row.querySelector('.product-sku')
+                            .textContent
+                            .toLowerCase();
+
+                        row.style.display =
+                            name.includes(term) || sku.includes(term) ?
+                            '' :
+                            'none';
+                    });
+                });
+            }
+
+            // Prevent submitting an empty sale
+            saleForm.addEventListener('submit', function(event) {
+                if (items.length === 0) {
+                    event.preventDefault();
+
+                    alert(
+                        'Please add at least one product to the sale before completing it.'
+                    );
+                }
+            });
+
+            // Initial render
+            render();
+        });
+    </script>
 @endsection

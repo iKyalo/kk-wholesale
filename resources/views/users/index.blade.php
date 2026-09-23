@@ -142,7 +142,7 @@
                         @endswitch
                     </td>
                     <td>
-                        @if ($user->role === 'administrator')
+                        @if (strtolower($user->role->name) === 'administrator')
                             <span class="text-muted small">All Branches</span>
                         @elseif (($user->branches ?? collect())->isNotEmpty())
                             {{ $user->branches->pluck('name')->implode(', ') }}
@@ -151,7 +151,7 @@
                         @endif
                     </td>
                     <td>
-                        @if ($user->role === 'administrator')
+                        @if (strtolower($user->role->name) === 'administrator')
                             <span class="text-muted small">All Stores</span>
                         @elseif (($user->stores ?? collect())->isNotEmpty())
                             {{ $user->stores->pluck('name')->implode(', ') }}

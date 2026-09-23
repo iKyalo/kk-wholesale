@@ -4,11 +4,34 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Branch;
+use App\Models\User;
+use Illuminate\Validation\Rule;
+
 class BranchesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $branches = Branch::all();
+        $query = Branch::withCount('users');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $branches = $query
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('branches.index', compact('branches'));
     }
 
@@ -50,7 +73,12 @@ class BranchesController extends Controller
     {
         $validated = $request->validate([
             'name'      => ['required', 'string', 'max:255'],
-            'code'      => ['required', 'string', 'max:50', 'unique:branches,code'],
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('branches', 'code')->ignore($branch->id),
+            ],
             'location'  => ['required', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
             'phone'     => ['nullable', 'string', 'max:20'],
@@ -86,9 +114,11 @@ class BranchesController extends Controller
             ->with('success', 'Branch deleted successfully.');
     }
 
-    public function editUser() 
+    public function editUser(Branch $branch) 
     {
+        $users = User::where('role_id', 2)->get();
 
+        return view('branches.edit-users', compact('branch', 'users'));
     }
 
     public function updateUser() 

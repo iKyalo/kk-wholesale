@@ -104,9 +104,13 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/by-store', 'byStore')->name('by-store');
 
+            Route::get('/{inventory}', 'show')
+                ->whereNumber('inventory')
+                ->name('show');
+
             Route::get('/edit-stock', 'editStock')->name('edit-stock');
 
-            Route::post('/edit-stock', 'editStock')->name('update-stock');
+            Route::post('/edit-stock', 'updateStock')->name('update-stock');
 
 
         });

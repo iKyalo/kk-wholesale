@@ -17,24 +17,68 @@ class UsersController extends Controller
     /**
      * Display all users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::all();
+        $roles = Role::orderBy('name')
+        ->get()
+        ->keyBy('id');
 
         $branches = Branch::where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        $users = User::query()
-            ->with(['role', 'branches', 'stores'])
-            ->latest()
-            ->paginate(15);
-
         $stores = Store::where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        return view('users.index', compact('users', 'roles', 'branches', 'stores'));
+        $users = User::query()
+            ->with(['role', 'branches', 'stores'])
+
+            // Search by name, email, or phone
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+
+            // Filter by role
+            ->when($request->filled('role'), function ($query) use ($request) {
+                $query->where('role_id', $request->role);
+            })
+
+            // Filter by status
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+
+            // Filter by assigned branch
+            ->when($request->filled('branch_id'), function ($query) use ($request) {
+                $query->whereHas('branches', function ($q) use ($request) {
+                    $q->where('branches.id', $request->branch_id);
+                });
+            })
+
+            // Filter by assigned store
+            ->when($request->filled('store_id'), function ($query) use ($request) {
+                $query->whereHas('stores', function ($q) use ($request) {
+                    $q->where('stores.id', $request->store_id);
+                });
+            })
+
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('users.index', compact(
+            'users',
+            'roles',
+            'branches',
+            'stores'
+        ));
     }
 
     /**
@@ -51,11 +95,8 @@ class UsersController extends Controller
             ->get();
 
         $roles = Role::all();
-        // dd($roles);
 
-        $user = [];
-
-        return view('users.create', compact('branches', 'stores', 'roles', 'user'));
+        return view('users.create', compact('branches', 'stores', 'roles'));
     }
 
     /**

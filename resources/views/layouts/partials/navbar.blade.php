@@ -55,14 +55,14 @@
                             <strong class="text-body">{{ auth()->user()->name ?? '' }}</strong>
                         </span>
                     </li>
-                    <li>
+                    {{-- <li>
                         <hr class="dropdown-divider">
-                    </li>
-                    <li>
+                    </li> --}}
+                    {{-- <li>
                         <a class="dropdown-item" href="{{ Route::has('profile.edit') ? route('profile.edit') : '#' }}">
                             <i class="bi bi-person me-2"></i> My Profile
                         </a>
-                    </li>
+                    </li> --}}
                     {{-- <li>
                         <a class="dropdown-item"
                             href="{{ Route::has('settings.index') ? route('settings.index') : '#' }}">

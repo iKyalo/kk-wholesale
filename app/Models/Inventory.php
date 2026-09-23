@@ -9,6 +9,7 @@ class Inventory extends Model
     //
     protected $fillable = [
         'branch_id',
+        'store_id',
         'product_id',
         'quantity',
         'reorder_level',

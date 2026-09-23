@@ -9,6 +9,7 @@ class Sale extends Model
     protected $fillable = [
         'sale_number',
         'branch_id',
+        'store_id',
         'user_id',
         'subtotal',
         'discount',
@@ -33,6 +34,11 @@ class Sale extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function user()

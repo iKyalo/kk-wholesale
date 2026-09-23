@@ -108,7 +108,7 @@
             id="branch_ids" name="branch_ids[]" multiple size="4">
             @foreach ($branches as $branch)
                 <option value="{{ $branch->id }}"
-                    {{ collect(old('branch_ids', $user->branches->pluck('id')->all() ?? []))->contains($branch->id) ? 'selected' : '' }}>
+                    {{ collect(old('branch_ids', []))->contains($branch->id) ? 'selected' : '' }}>
                     {{ $branch->name }}
                 </option>
             @endforeach
@@ -126,10 +126,8 @@
             id="store_ids" name="store_ids[]" multiple size="4">
             @foreach ($stores as $store)
                 <option value="{{ $store->id }}"
-                    {{ collect(old('store_ids', $user->stores->pluck('id')->all() ?? []))->contains($store->id) ? 'selected' : '' }}>
-                    {{ $store->name }} @if ($store->branch ?? false)
-                        ({{ $store->branch->name }})
-                    @endif
+                    {{ collect(old('store_ids', []))->contains($store->id) ? 'selected' : '' }}>
+                    {{ $store->name }}
                 </option>
             @endforeach
         </select>

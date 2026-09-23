@@ -229,6 +229,81 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            function filterStores(branchSelectId, storeSelectId) {
+                const branchSelect = document.getElementById(branchSelectId);
+                const storeSelect = document.getElementById(storeSelectId);
+
+                if (!branchSelect || !storeSelect) return;
+
+                const originalOptions = Array.from(storeSelect.options);
+
+                function updateStores() {
+                    const branchId = branchSelect.value;
+                    const currentStoreId = storeSelect.value;
+
+                    storeSelect.innerHTML = '';
+
+                    // Placeholder
+                    const placeholder = document.createElement('option');
+                    placeholder.value = '';
+                    placeholder.textContent = 'Select store';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    storeSelect.appendChild(placeholder);
+
+                    if (!branchId) {
+                        storeSelect.disabled = true;
+                        return;
+                    }
+
+                    let hasCurrentStore = false;
+
+                    originalOptions.forEach(option => {
+                        if (
+                            option.value &&
+                            option.dataset.branchId === branchId
+                        ) {
+                            const newOption = option.cloneNode(true);
+
+                            if (option.value === currentStoreId) {
+                                newOption.selected = true;
+                                hasCurrentStore = true;
+                                placeholder.selected = false;
+                            }
+
+                            storeSelect.appendChild(newOption);
+                        }
+                    });
+
+                    storeSelect.disabled = false;
+
+                    if (!hasCurrentStore) {
+                        storeSelect.value = '';
+                    }
+                }
+
+                branchSelect.addEventListener('change', updateStores);
+
+                // Run on page load for edit/validation-error state
+                updateStores();
+            }
+
+            // Source branch → source store
+            filterStores(
+                'source_branch_id',
+                'source_store_id'
+            );
+
+            // Destination branch → destination store
+            filterStores(
+                'destination_branch_id',
+                'destination_store_id'
+            );
+
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
             let items = [];
             let nextRowId = 1;
 

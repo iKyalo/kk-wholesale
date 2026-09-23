@@ -79,11 +79,11 @@ class ProductsController extends Controller
     public function show(Product $product)
     {
         $product->load([
-            'inventories.store',
+            'inventories.store.branch',
         ]);
-    
-        $storeInventory = $product->inventories->groupBy('store_id');
-    
+
+        $storeInventory = $product->inventories;
+
         return view('products.show', compact(
             'product',
             'storeInventory'

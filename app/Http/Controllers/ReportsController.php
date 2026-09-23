@@ -17,7 +17,7 @@ class ReportsController extends Controller
     {
         $totalSales = Sale::count();
 
-        $totalRevenue = Sale::sum('total_amount');
+        $totalRevenue = Sale::sum('total');
 
         $totalProducts = Product::count();
 
@@ -69,15 +69,18 @@ class ReportsController extends Controller
 
         $stores = Store::orderBy('name')->get();
 
-        $totalRevenue = (clone $query)->sum('total_amount');
+        $totalRevenue = (clone $query)->sum('total');
 
         $totalSales = (clone $query)->count();
+
+        $storePerformance = [];
 
         return view('reports.sales', compact(
             'sales',
             'stores',
             'totalRevenue',
-            'totalSales'
+            'totalSales',
+            'storePerformance'
         ));
     }
 
@@ -119,9 +122,12 @@ class ReportsController extends Controller
 
         $stores = Store::orderBy('name')->get();
 
+        $inventoryRecords = [];
+
         return view('reports.inventory', compact(
             'inventory',
-            'stores'
+            'stores',
+            'inventoryRecords'
         ));
     }
 
@@ -157,12 +163,15 @@ class ReportsController extends Controller
             ->paginate(25)
             ->withQueryString();
 
+        $stockMovements = [];
+
         $stores = Store::orderBy('name')->get();
 
         $products = Product::orderBy('name')->get();
 
         return view('reports.stock-movements', compact(
             'movements',
+            'stockMovements',
             'stores',
             'products'
         ));
@@ -220,6 +229,42 @@ class ReportsController extends Controller
         return view('reports.transfers', compact(
             'transfers',
             'stores'
+        ));
+    }
+
+    public function products() 
+    {
+        $products = [];
+
+        $productPerformance = [];
+
+        return view('reports.products', compact(
+            'products',
+            'productPerformance'
+        ));
+    }
+
+    public function branches() 
+    {
+        $branches = [];
+
+        $branchPerformance = [];
+
+        return view('reports.branches', compact(
+            'branches',
+            'branchPerformance'
+        ));
+    }
+
+    public function stores() 
+    {
+        $stores = [];
+
+        $storePerformance = [];
+
+        return view('reports.stores', compact(
+            'stores',
+            'storePerformance'
         ));
     }
 }

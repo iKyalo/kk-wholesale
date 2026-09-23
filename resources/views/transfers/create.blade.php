@@ -1,40 +1,46 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-light min-vh-100 py-4">
-<div class="container-fluid px-3 px-md-4">
+    <div class="bg-light min-vh-100 py-4">
+        <div class="container-fluid px-3 px-md-4">
 
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h1 class="h3 fw-bold mb-0">Create Stock Transfer</h1>
-            <p class="text-muted small mb-0">Move stock from one store to another.</p>
-        </div>
-        <a href="{{ route('transfers.index') }}" class="btn btn-outline-secondary">
-            Back to Transfers
-        </a>
-    </div>
-
-    @if ($errors->any())
-        <div class="alert alert-danger" role="alert">
-            Please fix the errors below and try again.
-        </div>
-    @endif
-
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-            <form method="POST" action="{{ route('transfers.store') }}" novalidate>
-                @csrf
-
-                @include('transfers._form')
-
-                <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary px-4">Submit Transfer</button>
-                    <a href="{{ route('transfers.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h1 class="h3 fw-bold mb-0">Create Stock Transfer</h1>
+                    <p class="text-muted small mb-0">Move stock from one store to another.</p>
                 </div>
-            </form>
+                <a href="{{ route('transfers.index') }}" class="btn btn-outline-secondary">
+                    Back to Transfers
+                </a>
+            </div>
+
+            @if ($errors->any())
+                <div class="alert alert-danger" role="alert">
+                    <strong>Please fix the following errors:</strong>
+
+                    <ul class="mb-0 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ route('transfers.store') }}" novalidate>
+                        @csrf
+
+                        @include('transfers._form')
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">Submit Transfer</button>
+                            <a href="{{ route('transfers.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
-
-</div>
-</div>
 @endsection

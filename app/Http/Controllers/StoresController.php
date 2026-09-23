@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Store;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -96,6 +97,15 @@ class StoresController extends Controller
             ->with('success', 'Store deleted successfully.');
     }
 
-    public function editUser() {}
-    public function updateUser() {}
+    public function editUser(Store $store) 
+    {
+        $users = User::where('role_id', 3)->get();
+
+        return view('stores.edit-users', compact('store', 'users'));
+    }
+
+    public function updateUser() 
+    {
+
+    }
 }
