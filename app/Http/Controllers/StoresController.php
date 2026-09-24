@@ -179,4 +179,14 @@ class StoresController extends Controller
             ->route('stores.show', $store)
             ->with('success', 'Store users updated successfully.');
     }
+
+    public function removeUser(Store $store, User $user)
+    {
+        // Remove the user from this store.
+        $store->users()->detach($user->id);
+
+        return redirect()
+            ->route('stores.show', $store)
+            ->with('success', 'User removed from store successfully.');
+    }
 }
