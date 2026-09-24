@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StoresController extends Controller
@@ -18,7 +18,7 @@ class StoresController extends Controller
             ->with('branch')
             ->withCount('users')
 
-            // Search by store name, code, or location
+        // Search by store name, code, or location
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
 
@@ -29,12 +29,12 @@ class StoresController extends Controller
                 });
             })
 
-            // Filter by branch
+        // Filter by branch
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 $query->where('branch_id', $request->branch_id);
             })
 
-            // Filter by status
+        // Filter by status
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where(
                     'is_active',
@@ -80,9 +80,30 @@ class StoresController extends Controller
     {
         $store->load([
             'branch',
-            'users',
             'inventories.product',
         ]);
+
+        $store->users_count = $store->users()->count();
+
+        $store->products_count = $store->inventories
+            ->pluck('product_id')
+            ->unique()
+            ->count();
+
+        $store->total_units = $store->inventories->sum('quantity');
+
+        $store->inventory_value = $store->inventories->sum(function ($inventory) {
+            return $inventory->quantity * $inventory->cost_price;
+        });
+
+        $store->sales_today = $store->sales()
+            ->whereDate('created_at', today())
+            ->sum('total');
+
+        $store->sales_this_month = $store->sales()
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('total');
 
         return view('stores.show', compact('store'));
     }
@@ -128,15 +149,34 @@ class StoresController extends Controller
             ->with('success', 'Store deleted successfully.');
     }
 
-    public function editUser(Store $store) 
+    public function editUser(Store $store)
     {
         $users = User::where('role_id', 3)->get();
 
         return view('stores.edit-users', compact('store', 'users'));
     }
 
-    public function updateUser() 
+    public function updateUser(Request $request, Store $store)
     {
+        $validated = $request->validate([
+            'users'   => ['nullable', 'array'],
+            'users.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('users', 'id'),
+            ],
+        ]);
 
+        // Selected users. An empty array removes all assignments.
+        $userIds = $validated['users'] ?? [];
+
+        DB::transaction(function () use ($store, $userIds) {
+            $store->users()->sync($userIds);
+        });
+
+        return redirect()
+            ->route('stores.show', $store)
+            ->with('success', 'Store users updated successfully.');
     }
 }

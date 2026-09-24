@@ -85,7 +85,7 @@
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <p class="text-muted text-uppercase small fw-semibold mb-1">Users</p>
-                            <h4 class="fw-bold mb-0">{{ number_format($branch->users_count ?? 0) }}</h4>
+                            <h4 class="fw-bold mb-0">{{ number_format($usersCount ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <p class="text-muted text-uppercase small fw-semibold mb-1">Stores</p>
-                            <h4 class="fw-bold mb-0">{{ number_format($branch->stores_count ?? 0) }}</h4>
+                            <h4 class="fw-bold mb-0">{{ number_format($storesCount ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <p class="text-muted text-uppercase small fw-semibold mb-1">Products</p>
-                            <h4 class="fw-bold mb-0">{{ number_format($branch->products_count ?? 0) }}</h4>
+                            <h4 class="fw-bold mb-0">{{ number_format($productsCount ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <p class="text-muted text-uppercase small fw-semibold mb-1">Inventory Value</p>
-                            <h4 class="fw-bold mb-0">KSh {{ number_format($branch->inventory_value ?? 0, 2) }}</h4>
+                            <h4 class="fw-bold mb-0">KSh {{ number_format($inventoryValue ?? 0, 2) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <p class="text-muted text-uppercase small fw-semibold mb-1">Sales Today</p>
-                            <h4 class="fw-bold mb-0">KSh {{ number_format($branch->sales_today ?? 0, 2) }}</h4>
+                            <h4 class="fw-bold mb-0">KSh {{ number_format($salesToday ?? 0, 2) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -148,7 +148,7 @@
                                     <tr>
                                         <td class="fw-semibold">{{ $user->name }}</td>
                                         <td>{{ $user->email }}</td>
-                                        <td>{{ $user->role ?? '—' }}</td>
+                                        <td>{{ $user->role->name ?? '—' }}</td>
                                         <td>
                                             @if ($user->is_active ?? true)
                                                 <span class="badge text-bg-success">Active</span>

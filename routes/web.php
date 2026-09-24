@@ -1,17 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\SalesController;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\TransfersController;
 use App\Http\Controllers\BranchesController;
-use App\Http\Controllers\StoresController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\StoresController;
+use App\Http\Controllers\TransfersController;
 use App\Http\Controllers\UsersController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,7 +53,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-
     /*
     |--------------------------------------------------------------------------
     | Dashboard
@@ -63,7 +61,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -94,7 +91,6 @@ Route::middleware('auth')->group(function () {
 
         });
 
-
     /*
     |--------------------------------------------------------------------------
     | Inventory
@@ -118,9 +114,7 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/edit-stock', 'updateStock')->name('update-stock');
 
-
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -140,9 +134,7 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/{transfer}', 'show')->name('show');
 
-
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -167,11 +159,11 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/{branch}/users/edit', 'editUser')->name('users.edit');
             Route::put('/{branch}/users/', 'updateUser')->name('users.update');
+            Route::delete('/{branch}/users/{user}', 'removeUser')->name('users.remove');
 
-            Route::delete('/{branch}', 'destroy')->name('destroy'); 
+            Route::delete('/{branch}', 'destroy')->name('destroy');
 
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -196,11 +188,11 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/{store}/users/edit', 'editUser')->name('users.edit');
             Route::put('/{store}/users/', 'updateUser')->name('users.update');
+            Route::delete('/{store}/users/{user}', 'removeUser')->name('users.remove');
 
             Route::delete('/{store}', 'destroy')->name('destroy');
 
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -227,8 +219,7 @@ Route::middleware('auth')->group(function () {
 
         });
 
-
-        /*
+    /*
     |--------------------------------------------------------------------------
     | Users Management
     |--------------------------------------------------------------------------
@@ -253,8 +244,6 @@ Route::middleware('auth')->group(function () {
 
         });
 
-
-
     /*
     |--------------------------------------------------------------------------
     | Reports
@@ -262,33 +251,33 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('reports')
-    ->name('reports.')
-    ->controller(ReportsController::class)
-    ->group(function () {
+        ->name('reports.')
+        ->controller(ReportsController::class)
+        ->group(function () {
 
-        Route::get('/', 'index')
-            ->name('index');
+            Route::get('/', 'index')
+                ->name('index');
 
-        Route::get('/sales', 'sales')
-            ->name('sales');
+            Route::get('/sales', 'sales')
+                ->name('sales');
 
-        Route::get('/inventory', 'inventory')
-            ->name('inventory');
+            Route::get('/inventory', 'inventory')
+                ->name('inventory');
 
-        Route::get('/stock-movements', 'stockMovements')
-            ->name('stock-movements');
+            Route::get('/stock-movements', 'stockMovements')
+                ->name('stock-movements');
 
-        Route::get('/transfers', 'transfers')
-            ->name('transfers');
+            Route::get('/transfers', 'transfers')
+                ->name('transfers');
 
-        Route::get('/products', 'products')
-            ->name('products');
+            Route::get('/products', 'products')
+                ->name('products');
 
-        Route::get('/branches', 'branches')
-            ->name('branches');
+            Route::get('/branches', 'branches')
+                ->name('branches');
 
-        Route::get('/stores', 'stores')
-            ->name('stores');
-    });
+            Route::get('/stores', 'stores')
+                ->name('stores');
+        });
 
 });

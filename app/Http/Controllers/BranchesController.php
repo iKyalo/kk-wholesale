@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class BranchesController extends Controller
@@ -61,7 +61,44 @@ class BranchesController extends Controller
 
     public function show(Branch $branch)
     {
-        return view('branches.show', compact('branch'));
+        // Load branch users and stores.
+        $branch->load(['users', 'stores']);
+
+        $storeIds = $branch->stores->pluck('id');
+
+        // 1. Total users assigned to this branch.
+        $usersCount = $branch->users()->count();
+
+        // 2. Total stores in this branch.
+        $storesCount = $storeIds->count();
+
+        // 3. Unique products stocked in this branch.
+        $productsCount = DB::table('inventories')
+            ->whereIn('store_id', $storeIds)
+            ->distinct('product_id')
+            ->count('product_id');
+
+        // 4. Total inventory value using cost price.
+        $inventoryValue = DB::table('inventories')
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->whereIn('inventories.store_id', $storeIds)
+            ->selectRaw('COALESCE(SUM(inventories.quantity * products.cost_price), 0) as total')
+            ->value('total');
+
+        // 5. Total sales today for this branch.
+        $salesToday = DB::table('sales')
+            ->whereIn('store_id', $storeIds)
+            ->whereDate('created_at', today())
+            ->sum('total');
+
+        return view('branches.show', compact(
+            'branch',
+            'usersCount',
+            'storesCount',
+            'productsCount',
+            'inventoryValue',
+            'salesToday'
+        ));
     }
 
     public function edit(Branch $branch)
@@ -73,7 +110,7 @@ class BranchesController extends Controller
     {
         $validated = $request->validate([
             'name'      => ['required', 'string', 'max:255'],
-            'code' => [
+            'code'      => [
                 'required',
                 'string',
                 'max:50',
@@ -84,7 +121,7 @@ class BranchesController extends Controller
             'phone'     => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
-        ]);     
+        ]);
 
         $branch->update($validated);
 
@@ -114,16 +151,38 @@ class BranchesController extends Controller
             ->with('success', 'Branch deleted successfully.');
     }
 
-    public function editUser(Branch $branch) 
+    public function editUser(Branch $branch)
     {
         $users = User::where('role_id', 2)->get();
 
         return view('branches.edit-users', compact('branch', 'users'));
     }
 
-    public function updateUser() 
+    public function updateUser(Request $request, Branch $branch)
     {
+        $validated = $request->validate([
+            'users'   => ['nullable', 'array'],
+            'users.*' => ['integer', 'distinct', 'exists:users,id'],
+        ]);
 
+        DB::transaction(function () use ($validated, $branch) {
+            // Assign selected users and remove users that were unselected.
+            $branch->users()->sync($validated['users'] ?? []);
+        });
+
+        return redirect()
+            ->route('branches.show', $branch)
+            ->with('success', 'Branch users updated successfully.');
+    }
+
+    public function removeUser(Branch $branch, User $user)
+    {
+        // Remove the user from this branch.
+        $branch->users()->detach($user->id);
+
+        return redirect()
+            ->route('branches.show', $branch)
+            ->with('success', 'User removed from branch successfully.');
     }
 
 }

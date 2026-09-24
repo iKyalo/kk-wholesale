@@ -168,7 +168,7 @@
                                     <tr>
                                         <td class="fw-semibold">{{ $user->name }}</td>
                                         <td>{{ $user->email }}</td>
-                                        <td>{{ $user->role ?? '—' }}</td>
+                                        <td>{{ $user->role->name ?? '—' }}</td>
                                         <td>
                                             @if ($user->is_active ?? true)
                                                 <span class="badge text-bg-success">Active</span>
