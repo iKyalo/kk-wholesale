@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@kkwholesale.co.ke'],
             [
                 'name'     => 'Dr System Administrator',
+                'phone'    => '0722000111',
                 'password' => Hash::make('password'),
                 'role_id'  => 1,
             ]
@@ -22,6 +23,7 @@ class UserSeeder extends Seeder
             ['email' => 'branchmanager@kkwholesale.co.ke'],
             [
                 'name'     => 'Mr Branch Manager',
+                'phone'    => '0723000111',
                 'password' => Hash::make('password'),
                 'role_id'  => 2,
             ]
@@ -31,6 +33,7 @@ class UserSeeder extends Seeder
             ['email' => 'storemanager@kkwholesale.co.ke'],
             [
                 'name'     => 'Mrs Store Manager',
+                'phone'    => '0724000111',
                 'password' => Hash::make('password'),
                 'role_id'  => 3,
             ]
