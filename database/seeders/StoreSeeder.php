@@ -23,7 +23,7 @@ class StoreSeeder extends Seeder
                 'location' => 'Mombasa CBD',
             ],
             [
-                'branch'   => 'Branch 3',
+                'branch'   => 'Branch 2',
                 'name'     => 'Mombasa Warehouse',
                 'location' => 'Changamwe',
             ],
