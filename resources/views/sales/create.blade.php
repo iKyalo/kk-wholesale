@@ -351,7 +351,7 @@
                         addButton.textContent = 'Add';
                     } else {
                         addButton.disabled = false;
-                        addButton.textContent = 'Added';
+                        addButton.textContent = 'Add';
                     }
                 });
             }
