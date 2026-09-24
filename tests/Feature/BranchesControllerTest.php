@@ -12,38 +12,6 @@ use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Feature tests for App\Http\Controllers\BranchesController.
- *
- * ---------------------------------------------------------------------------
- * ASSUMPTIONS (nothing below could be verified from the controller alone).
- * Every assumption is isolated in the constants / helpers at the top of the
- * class so it can be corrected in one place:
- *
- *  A1. Factories exist: Branch, User, Store (with a `branch_id` column), Product
- *      (with a `cost_price` column).
- *  A2. Standard resource route names exist: branches.{index,create,store,show,
- *      edit,update,destroy}. index/show are confirmed by the controller's
- *      redirects; the rest are inferred.
- *  A3. Route names + HTTP verbs for editUser / updateUser / removeUser are NOT
- *      knowable from the controller -> see the ROUTE_* / METHOD_* constants.
- *  A4. Routes sit behind `auth` middleware and the guest redirect target is
- *      route('login').
- *  A5. `inventories` has store_id, product_id, quantity; `sales` has store_id,
- *      total, created_at. If they have other NOT NULL columns, extend
- *      stock() / recordSale().
- *  A6. Branch::users() is BelongsToMany (the controller calls sync()/detach()),
- *      Branch::stores() is HasMany, Branch::$fillable covers the validated keys,
- *      and Branch does NOT use SoftDeletes (otherwise swap the
- *      assertDatabaseMissing calls for assertSoftDeleted).
- *  A7. users.role_id accepts the values in ROLE_STAFF / ROLE_OTHER (no FK
- *      blocking them). ROLE_STAFF = 2 is hard-coded in editUser().
- *  A8. PHPUnit 10+ (attributes for data providers).
- *  A9. The controller has no authorization logic. Any authenticated user is
- *      used as the acting user. If the routes are protected by role/permission
- *      middleware or a policy, change actingUser().
- * ---------------------------------------------------------------------------
- */
 class BranchesControllerTest extends TestCase
 {
     use RefreshDatabase;
