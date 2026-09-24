@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Feature;
 
 use App\Models\Branch;
@@ -56,7 +55,7 @@ class BranchesControllerTest extends TestCase
     // A3 - adjust to match routes/web.php
     private const ROUTE_EDIT_USERS    = 'branches.users.edit';
     private const ROUTE_UPDATE_USERS  = 'branches.users.update';
-    private const ROUTE_REMOVE_USER   = 'branches.users.destroy';
+    private const ROUTE_REMOVE_USER   = 'branches.users.remove';
     private const METHOD_UPDATE_USERS = 'PUT';
     private const METHOD_REMOVE_USER  = 'DELETE';
 
@@ -131,7 +130,7 @@ class BranchesControllerTest extends TestCase
         return $response->viewData('branches')->pluck('id')->all();
     }
 
-    private function assertViewNumber(float|int $expected, TestResponse $response, string $key): void
+    private function assertViewNumber(float | int $expected, TestResponse $response, string $key): void
     {
         $this->assertEqualsWithDelta(
             $expected,
@@ -183,16 +182,16 @@ class BranchesControllerTest extends TestCase
     public static function invalidFieldValues(): array
     {
         return [
-            'name is not a string'  => ['name', ['array']],
-            'name too long'         => ['name', str_repeat('a', 256)],
-            'code too long'         => ['code', str_repeat('a', 51)],
-            'location too long'     => ['location', str_repeat('a', 256)],
-            'is_active not boolean' => ['is_active', 'maybe'],
+            'name is not a string'   => ['name', ['array']],
+            'name too long'          => ['name', str_repeat('a', 256)],
+            'code too long'          => ['code', str_repeat('a', 51)],
+            'location too long'      => ['location', str_repeat('a', 256)],
+            'is_active not boolean'  => ['is_active', 'maybe'],
             'is_active out of range' => ['is_active', 2],
-            'phone too long'        => ['phone', str_repeat('1', 21)],
-            'email malformed'       => ['email', 'not-an-email'],
-            'email too long'        => ['email', str_repeat('a', 250) . '@x.com'],
-            'address too long'      => ['address', str_repeat('a', 1001)],
+            'phone too long'         => ['phone', str_repeat('1', 21)],
+            'email malformed'        => ['email', 'not-an-email'],
+            'email too long'         => ['email', str_repeat('a', 250) . '@x.com'],
+            'address too long'       => ['address', str_repeat('a', 1001)],
         ];
     }
 
@@ -219,9 +218,9 @@ class BranchesControllerTest extends TestCase
     public static function invalidUsersPayloads(): array
     {
         return [
-            'users is not an array'   => ['not-an-array', 'users'],
-            'user id is not integer'  => [['abc'], 'users.0'],
-            'user id is a decimal'    => [['1.5'], 'users.0'],
+            'users is not an array'  => ['not-an-array', 'users'],
+            'user id is not integer' => [['abc'], 'users.0'],
+            'user id is a decimal'   => [['1.5'], 'users.0'],
         ];
     }
 
@@ -281,7 +280,7 @@ class BranchesControllerTest extends TestCase
         $branches = $response->viewData('branches');
 
         $this->assertSame(['Alpha Branch', 'Zulu Branch'], $branches->pluck('name')->all());
-        $this->assertSame([0, 2], $branches->pluck('users_count')->map(fn ($c) => (int) $c)->all());
+        $this->assertSame([0, 2], $branches->pluck('users_count')->map(fn($c) => (int) $c)->all());
     }
 
     #[DataProvider('searchableColumns')]
@@ -608,10 +607,10 @@ class BranchesControllerTest extends TestCase
 
     public function test_show_counts_distinct_products_across_all_branch_stores(): void
     {
-        $branch = Branch::factory()->create();
-        $other  = Branch::factory()->create();
-        $storeA = $this->makeStore($branch);
-        $storeB = $this->makeStore($branch);
+        $branch     = Branch::factory()->create();
+        $other      = Branch::factory()->create();
+        $storeA     = $this->makeStore($branch);
+        $storeB     = $this->makeStore($branch);
         $otherStore = $this->makeStore($other);
 
         [$p1, $p2, $p3, $p4] = [
@@ -656,9 +655,9 @@ class BranchesControllerTest extends TestCase
         $p1 = $this->makeProduct(12.50);
         $p2 = $this->makeProduct(30.00);
 
-        $this->stock($storeA, $p1, 10);      // 125.00
-        $this->stock($storeA, $p2, 4);       // 120.00
-        $this->stock($storeB, $p1, 2);       //  25.00
+        $this->stock($storeA, $p1, 10);       // 125.00
+        $this->stock($storeA, $p2, 4);        // 120.00
+        $this->stock($storeB, $p1, 2);        //  25.00
         $this->stock($otherStore, $p1, 1000); // other branch: excluded
 
         $response = $this->signedIn()->get(route('branches.show', $branch))->assertOk();
@@ -721,7 +720,7 @@ class BranchesControllerTest extends TestCase
             ->get(route('branches.edit', $branch))
             ->assertOk()
             ->assertViewIs('branches.edit')
-            ->assertViewHas('branch', fn ($shown) => $shown->is($branch));
+            ->assertViewHas('branch', fn($shown) => $shown->is($branch));
     }
 
     public function test_edit_returns_404_for_a_missing_branch(): void
@@ -738,13 +737,13 @@ class BranchesControllerTest extends TestCase
     public function test_update_changes_all_fields_and_leaves_other_branches_alone(): void
     {
         $branch = Branch::factory()->create([
-            'name' => 'Old Name', 'code' => 'OLD-1', 'location' => 'Old Location', 'is_active' => true,
+            'name'  => 'Old Name', 'code'    => 'OLD-1', 'location'          => 'Old Location', 'is_active' => true,
             'phone' => '0700000000', 'email' => 'old@example.com', 'address' => 'Old Address',
         ]);
         $other = Branch::factory()->create(['name' => 'Untouched']);
 
         $payload = [
-            'name' => 'New Name', 'code' => 'NEW-1', 'location' => 'New Location', 'is_active' => 0,
+            'name'  => 'New Name', 'code'    => 'NEW-1', 'location'          => 'New Location', 'is_active' => 0,
             'phone' => '0711111111', 'email' => 'new@example.com', 'address' => 'New Address',
         ];
 
@@ -809,7 +808,7 @@ class BranchesControllerTest extends TestCase
             ->assertRedirect(route('branches.index'));
 
         $this->assertDatabaseHas('branches', [
-            'id' => $branch->id, 'name' => 'Only Name Changed',
+            'id'    => $branch->id, 'name'   => 'Only Name Changed',
             'phone' => '0700000000', 'email' => 'old@example.com', 'address' => 'Old Address',
         ]);
     }
@@ -981,14 +980,14 @@ class BranchesControllerTest extends TestCase
             ->get(route(self::ROUTE_EDIT_USERS, $branch))
             ->assertOk()
             ->assertViewIs('branches.edit-users')
-            ->assertViewHas('branch', fn ($shown) => $shown->is($branch));
+            ->assertViewHas('branch', fn($shown) => $shown->is($branch));
 
         $users = $response->viewData('users');
 
         $this->assertTrue($users->contains('id', $staffA->id));
         $this->assertTrue($users->contains('id', $staffB->id));
         $this->assertFalse($users->contains('id', $other->id));
-        $this->assertTrue($users->every(fn ($u) => (int) $u->role_id === self::ROLE_STAFF));
+        $this->assertTrue($users->every(fn($u) => (int) $u->role_id === self::ROLE_STAFF));
     }
 
     /**
@@ -1023,7 +1022,7 @@ class BranchesControllerTest extends TestCase
 
     public function test_update_users_assigns_the_selected_users(): void
     {
-        $branch = Branch::factory()->create();
+        $branch  = Branch::factory()->create();
         [$a, $b] = User::factory()->count(2)->create(['role_id' => self::ROLE_STAFF])->all();
 
         $this->submitUsers($branch, ['users' => [$a->id, $b->id]])
@@ -1036,7 +1035,7 @@ class BranchesControllerTest extends TestCase
 
     public function test_update_users_removes_unselected_and_adds_new_ones(): void
     {
-        $branch = Branch::factory()->create();
+        $branch              = Branch::factory()->create();
         [$keep, $drop, $add] = User::factory()->count(3)->create(['role_id' => self::ROLE_STAFF])->all();
         $branch->users()->attach([$keep->id, $drop->id]);
 
@@ -1069,7 +1068,7 @@ class BranchesControllerTest extends TestCase
             ->assertSessionHas('success', 'Branch users updated successfully.');
 
         $this->assertSame([], $this->assignedUserIds($branch));
-        $users->each(fn ($u) => $this->assertModelExists($u));
+        $users->each(fn($u) => $this->assertModelExists($u));
     }
 
     public function test_update_users_with_users_omitted_detaches_everyone(): void
@@ -1173,8 +1172,8 @@ class BranchesControllerTest extends TestCase
 
     public function test_remove_user_detaches_only_that_user_from_this_branch(): void
     {
-        $branch = Branch::factory()->create();
-        $other  = Branch::factory()->create();
+        $branch            = Branch::factory()->create();
+        $other             = Branch::factory()->create();
         [$removed, $stays] = User::factory()->count(2)->create(['role_id' => self::ROLE_STAFF])->all();
 
         $branch->users()->attach([$removed->id, $stays->id]);
@@ -1187,7 +1186,7 @@ class BranchesControllerTest extends TestCase
 
         $this->assertEqualsCanonicalizing([$stays->id], $this->assignedUserIds($branch));
         $this->assertEqualsCanonicalizing([$removed->id], $this->assignedUserIds($other)); // other branch untouched
-        $this->assertModelExists($removed); // account itself is not deleted
+        $this->assertModelExists($removed);                                                // account itself is not deleted
     }
 
     public function test_remove_user_who_is_not_in_the_branch_still_succeeds_without_side_effects(): void

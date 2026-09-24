@@ -17,10 +17,12 @@ return new class extends Migration
             $table->string('sale_number')->unique()->nullable();
 
             $table->foreignId('branch_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
 
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
 
@@ -33,7 +35,7 @@ return new class extends Migration
 
             $table->string('status')->default('completed');
 
-            $table->timestamp('sold_at');
+            $table->timestamp('sold_at')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
