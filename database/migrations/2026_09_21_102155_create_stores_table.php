@@ -17,7 +17,7 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code')->unique()->nullable();
             $table->string('location')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();

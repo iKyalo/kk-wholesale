@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-        
+
             $table->string('name');
-            $table->string('code')->unique();
-        
+            $table->string('code')->unique()->nullable();
+
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->string('location')->nullable();
-        
+
             $table->boolean('is_active')->default(true);
-        
+
             $table->timestamps();
             $table->softDeletes();
         });
