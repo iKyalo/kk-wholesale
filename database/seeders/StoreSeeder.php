@@ -14,20 +14,25 @@ class StoreSeeder extends Seeder
                 'branch'   => 'Branch 1',
                 'name'     => 'Store 1',
                 'location' => 'Industrial Area',
+                'phone'    => '0711000001',
+                'email'    => 'store1@kkwholesale.co.ke',
             ],
 
             // Branch 2
             [
                 'branch'   => 'Branch 2',
-                'name'     => 'Mombasa Main Store',
+                'name'     => 'Store 2',
                 'location' => 'Mombasa CBD',
+                'phone'    => '0711000002',
+                'email'    => 'store2@kkwholesale.co.ke',
             ],
             [
                 'branch'   => 'Branch 2',
-                'name'     => 'Mombasa Warehouse',
+                'name'     => 'Store 3',
                 'location' => 'Changamwe',
+                'phone'    => '0711000003',
+                'email'    => 'store3@kkwholesale.co.ke',
             ],
-
         ];
 
         foreach ($stores as $store) {
