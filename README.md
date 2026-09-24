@@ -104,7 +104,7 @@ The application should be available at:
 http://127.0.0.1:8000
 ```
 
-### 8. Login
+### 9. Login
 
 Login with the following credentials:
 
@@ -411,23 +411,6 @@ Offline sales and synchronization are not currently supported.
 
 ---
 
-# Recommended Production Considerations
-
-Before deploying the application to production:
-
-1. Configure proper authorization policies.
-2. Add database transactions around all stock-changing operations.
-3. Use `lockForUpdate()` for concurrent inventory deductions.
-4. Add indexes to frequently queried inventory and transaction columns.
-5. Configure application and database backups.
-6. Disable Laravel debug mode.
-7. Configure HTTPS.
-8. Configure queue workers if notifications or background jobs are introduced.
-9. Add automated tests for sales and stock transfers.
-10. Add audit logging for sensitive administrative actions.
-
----
-
 # Testing
 
 Run the Laravel test suite with:
@@ -435,31 +418,6 @@ Run the Laravel test suite with:
 ```bash
 php artisan test
 ```
-
-Important test cases should include:
-
-### Sales
-
-- Sale can be created.
-- Multiple sale items can be created.
-- Insufficient stock prevents a sale.
-- Inventory is deducted correctly.
-- A stock movement is created for every deduction.
-- Failed sales roll back all database changes.
-
-### Products
-
-- Selling price must be greater than cost price.
-- Required product fields are validated.
-- Inactive products cannot be sold.
-
-### Transfers
-
-- Source and destination stores must be different.
-- Transfer quantities cannot exceed available stock.
-- Transfer items are created correctly.
-- Transfer status changes correctly.
-- Inventory changes correctly when stock is transferred.
 
 ---
 
