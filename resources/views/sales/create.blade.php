@@ -348,10 +348,10 @@
 
                     if (remainingStock <= 0) {
                         addButton.disabled = true;
-                        addButton.textContent = 'Added';
+                        addButton.textContent = 'Add';
                     } else {
                         addButton.disabled = false;
-                        addButton.textContent = 'Add';
+                        addButton.textContent = 'Added';
                     }
                 });
             }
