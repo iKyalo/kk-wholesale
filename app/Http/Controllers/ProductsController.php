@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
@@ -78,7 +77,7 @@ class ProductsController extends Controller
             'barcode'       => ['nullable', 'string', 'max:100', 'unique:products,barcode'],
             'category_id'   => ['nullable', 'exists:categories,id'],
             'description'   => ['nullable', 'string'],
-            'cost_price' => ['required', 'numeric', 'min:0'],
+            'cost_price'    => ['required', 'numeric', 'min:0'],
             'selling_price' => [
                 'required',
                 'numeric',
@@ -115,9 +114,32 @@ class ProductsController extends Controller
 
         $storeInventory = $product->inventories;
 
+        // Total units across all stores
+        $totalUnits = $storeInventory->sum('quantity');
+
+        // Unique branches currently holding stock
+        $branchesHoldingStock = $storeInventory
+            ->where('quantity', '>', 0)
+            ->pluck('store.branch_id')
+            ->unique()
+            ->filter()
+            ->count();
+
+        // Stores currently holding stock
+        $storesHoldingStock = $storeInventory
+            ->where('quantity', '>', 0)
+            ->count();
+
+        // Total inventory value based on product cost price
+        $totalInventoryValue = $totalUnits * $product->cost_price;
+
         return view('products.show', compact(
             'product',
-            'storeInventory'
+            'storeInventory',
+            'totalUnits',
+            'branchesHoldingStock',
+            'storesHoldingStock',
+            'totalInventoryValue'
         ));
     }
 

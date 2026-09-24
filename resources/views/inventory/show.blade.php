@@ -103,7 +103,7 @@
                                 @if ($inventory->product->category ?? false)
                                     <div class="col-6">
                                         <p class="text-muted small mb-1">Category</p>
-                                        <p class="fw-semibold mb-0">{{ $inventory->product->category->name }}</p>
+                                        <p class="fw-semibold mb-0">{{ $inventory->product->category }}</p>
                                     </div>
                                 @endif
                                 <div class="col-6">
