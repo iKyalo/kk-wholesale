@@ -141,6 +141,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr class="text-muted small text-uppercase">
+                            <th>#</th>
                             <th>Sale #</th>
                             <th>Date</th>
                             <th>Branch</th>
@@ -157,6 +158,7 @@
                     <tbody>
                         @forelse ($sales as $sale)
                             <tr>
+                                <td>{{ $loop->iteration }}</td>
                                 <td class="fw-semibold">{{ $sale->sale_number }}</td>
                                 <td>{{ $sale->created_at->format('d M Y, H:i') }}</td>
                                 <td>{{ $sale->store->branch->name ?? '—' }}</td>

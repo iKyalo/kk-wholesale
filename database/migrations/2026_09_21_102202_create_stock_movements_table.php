@@ -13,30 +13,33 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-        
+
             $table->foreignId('branch_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
-        
+
             $table->foreignId('product_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
-        
+
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained()
                 ->restrictOnDelete();
-        
-            $table->string('type');
-        
-            $table->integer('quantity');
-        
-            $table->unsignedInteger('quantity_before');
-            $table->unsignedInteger('quantity_after');
-        
+
+            $table->string('type')->nullable();
+
+            $table->integer('quantity')->nullable();
+
+            $table->unsignedInteger('quantity_before')->nullable();
+            $table->unsignedInteger('quantity_after')->nullable();
+
             $table->nullableMorphs('reference');
-        
+
             $table->text('notes')->nullable();
-        
+
             $table->timestamps();
         });
     }

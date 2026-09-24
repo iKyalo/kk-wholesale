@@ -1,13 +1,13 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
-use App\Models\Product;
 use App\Models\Inventory;
+use App\Models\Product;
 use App\Models\Sale;
-use App\Models\Store;
 use App\Models\StockMovement;
+use App\Models\Store;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,17 +15,51 @@ use Illuminate\Support\Str;
 
 class SalesController extends Controller
 {
+
     public function index()
     {
-        $sales = Sale::all();
-        return view('sales.index', compact('sales'));
+        $today        = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth   = Carbon::now()->endOfMonth();
+
+        // Base query: completed sales only
+        $completedSales = Sale::where('status', 'completed');
+
+        // Sales today
+        $salesToday = (clone $completedSales)
+            ->whereDate('sold_at', $today)
+            ->sum('total');
+
+        // Sales this month
+        $salesThisMonth = (clone $completedSales)
+            ->whereBetween('sold_at', [$startOfMonth, $endOfMonth])
+            ->sum('total');
+
+        // Total completed transactions
+        $totalTransactions = (clone $completedSales)->count();
+
+        // Average completed sale value
+        $averageSaleValue = (clone $completedSales)->avg('total') ?? 0;
+
+        // Retrieve sales for the table
+        $sales = Sale::with(['branch', 'store', 'user'])
+            ->latest('sold_at')
+            ->get();
+
+        return view('sales.index', compact(
+            'sales',
+            'salesToday',
+            'salesThisMonth',
+            'totalTransactions',
+            'averageSaleValue'
+        ));
     }
 
-    public function create() 
+    public function create()
     {
-        $sales = Sale::all();
+        $sales    = Sale::all();
         $branches = Branch::all();
-        $stores = Store::all();
+        $stores   = Store::all();
         $products = Product::all();
 
         return view('sales.create', compact('sales', 'branches', 'stores', 'products'));
@@ -36,19 +70,19 @@ class SalesController extends Controller
         $branches = Branch::orderBy('name')->get();
 
         $branchId = $request->input('branch_id');
-        $storeId = $request->input('store_id');
+        $storeId  = $request->input('store_id');
 
         // Only show stores belonging to the selected branch.
         $stores = Store::when($branchId, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
+            $query->where('branch_id', $branchId);
+        })
             ->orderBy('name')
             ->get();
 
         $store = null;
         $sales = collect();
 
-        $storeTotalSales = 0;
+        $storeTotalSales       = 0;
         $storeTransactionCount = 0;
         $storeAverageSaleValue = 0;
 
@@ -125,41 +159,41 @@ class SalesController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'branch_id' => [
+            'branch_id'          => [
                 'required',
                 'integer',
                 'exists:branches,id',
             ],
 
-            'store_id' => [
+            'store_id'           => [
                 'required',
                 'integer',
                 'exists:stores,id',
             ],
 
-            'payment_method' => [
+            'payment_method'     => [
                 'required',
                 'in:cash,mpesa,card,bank_transfer',
             ],
 
-            'sale_date' => [
+            'sale_date'          => [
                 'required',
                 'date',
             ],
 
-            'customer_name' => [
+            'customer_name'      => [
                 'nullable',
                 'string',
                 'max:255',
             ],
 
-            'customer_phone' => [
+            'customer_phone'     => [
                 'nullable',
                 'string',
                 'max:30',
             ],
 
-            'items' => [
+            'items'              => [
                 'required',
                 'array',
                 'min:1',
@@ -171,13 +205,13 @@ class SalesController extends Controller
                 'exists:products,id',
             ],
 
-            'items.*.quantity' => [
+            'items.*.quantity'   => [
                 'required',
                 'integer',
                 'min:1',
             ],
 
-            'items.*.discount' => [
+            'items.*.discount'   => [
                 'nullable',
                 'numeric',
                 'min:0',
@@ -189,7 +223,7 @@ class SalesController extends Controller
             ->where('branch_id', $validated['branch_id'])
             ->first();
 
-        if (!$store) {
+        if (! $store) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -214,8 +248,8 @@ class SalesController extends Controller
                     ->map(function ($productItems) {
                         return [
                             'product_id' => $productItems->first()['product_id'],
-                            'quantity' => $productItems->sum('quantity'),
-                            'discount' => $productItems->sum(function ($item) {
+                            'quantity'   => $productItems->sum('quantity'),
+                            'discount'   => $productItems->sum(function ($item) {
                                 return (float) ($item['discount'] ?? 0);
                             }),
                         ];
@@ -235,14 +269,14 @@ class SalesController extends Controller
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$inventory) {
+                    if (! $inventory) {
                         throw new \Exception(
                             "No inventory record exists for {$product->name} in the selected store."
                         );
                     }
 
                     $availableStock = (int) $inventory->quantity;
-                    $quantity = (int) $item['quantity'];
+                    $quantity       = (int) $item['quantity'];
 
                     if ($quantity > $availableStock) {
                         throw new \Exception(
@@ -252,7 +286,7 @@ class SalesController extends Controller
                     }
 
                     $unitPrice = (float) $product->selling_price;
-                    $discount = (float) ($item['discount'] ?? 0);
+                    $discount  = (float) ($item['discount'] ?? 0);
 
                     $lineSubtotal = ($unitPrice * $quantity) - $discount;
 
@@ -267,10 +301,10 @@ class SalesController extends Controller
 
                     $itemsToCreate[] = [
                         'product_id' => $product->id,
-                        'quantity' => $quantity,
+                        'quantity'   => $quantity,
                         'unit_price' => $unitPrice,
-                        'discount' => $discount,
-                        'subtotal' => $lineSubtotal,
+                        'discount'   => $discount,
+                        'subtotal'   => $lineSubtotal,
                     ];
 
                     // Deduct stock.
@@ -294,151 +328,156 @@ class SalesController extends Controller
 
                 $sale = DB::transaction(function () use ($validated) {
 
-                $saleSubtotal = 0;
-                $saleDiscount = 0;
+                    $saleSubtotal = 0;
+                    $saleDiscount = 0;
 
-                $itemsToCreate = [];
+                    $itemsToCreate = [];
 
-                $items = collect($validated['items'])
-                    ->groupBy('product_id')
-                    ->map(function ($productItems) {
-                        return [
-                            'product_id' => $productItems->first()['product_id'],
-                            'quantity' => $productItems->sum('quantity'),
-                            'discount' => $productItems->sum(function ($item) {
-                                return (float) ($item['discount'] ?? 0);
-                            }),
-                        ];
-                    })
-                    ->values();
+                    $items = collect($validated['items'])
+                        ->groupBy('product_id')
+                        ->map(function ($productItems) {
+                            return [
+                                'product_id' => $productItems->first()['product_id'],
+                                'quantity'   => $productItems->sum('quantity'),
+                                'discount'   => $productItems->sum(function ($item) {
+                                    return (float) ($item['discount'] ?? 0);
+                                }),
+                            ];
+                        })
+                        ->values();
 
-                /*
+                    /*
                 * First validate stock and calculate totals.
                 */
-                foreach ($items as $item) {
+                    foreach ($items as $item) {
 
-                    $product = Product::findOrFail($item['product_id']);
+                        $product = Product::findOrFail($item['product_id']);
 
-                    $inventory = Inventory::where('store_id', $validated['store_id'])
-                        ->where('product_id', $product->id)
-                        ->lockForUpdate()
-                        ->first();
+                        $inventory = Inventory::where('store_id', $validated['store_id'])
+                            ->where('product_id', $product->id)
+                            ->lockForUpdate()
+                            ->first();
 
-                    if (!$inventory) {
-                        throw new \Exception(
-                            "No inventory record exists for {$product->name} in the selected store."
-                        );
+                        if (! $inventory) {
+                            throw new \Exception(
+                                "No inventory record exists for {$product->name} in the selected store."
+                            );
+                        }
+
+                        $quantity = (int) $item['quantity'];
+
+                        if ($quantity > $inventory->quantity) {
+                            throw new \Exception(
+                                "Insufficient stock for {$product->name}. "
+                                . "Available: {$inventory->quantity}, requested: {$quantity}."
+                            );
+                        }
+
+                        $unitPrice = (float) $product->selling_price;
+                        $discount  = (float) ($item['discount'] ?? 0);
+
+                        $lineSubtotal = ($unitPrice * $quantity) - $discount;
+
+                        if ($lineSubtotal < 0) {
+                            throw new \Exception(
+                                "Discount for {$product->name} cannot exceed the line value."
+                            );
+                        }
+
+                        $saleSubtotal += $unitPrice * $quantity;
+                        $saleDiscount += $discount;
+
+                        $itemsToCreate[] = [
+                            'product_id'   => $product->id,
+                            'quantity'     => $quantity,
+                            'unit_price'   => $unitPrice,
+                            'discount'     => $discount,
+                            'subtotal'     => $lineSubtotal,
+                            'inventory_id' => $inventory->id,
+                        ];
                     }
 
-                    $quantity = (int) $item['quantity'];
+                    $tax = 0;
 
-                    if ($quantity > $inventory->quantity) {
-                        throw new \Exception(
-                            "Insufficient stock for {$product->name}. "
-                            . "Available: {$inventory->quantity}, requested: {$quantity}."
-                        );
-                    }
+                    $total = $saleSubtotal - $saleDiscount + $tax;
 
-                    $unitPrice = (float) $product->selling_price;
-                    $discount = (float) ($item['discount'] ?? 0);
-
-                    $lineSubtotal = ($unitPrice * $quantity) - $discount;
-
-                    if ($lineSubtotal < 0) {
-                        throw new \Exception(
-                            "Discount for {$product->name} cannot exceed the line value."
-                        );
-                    }
-
-                    $saleSubtotal += $unitPrice * $quantity;
-                    $saleDiscount += $discount;
-
-                    $itemsToCreate[] = [
-                        'product_id' => $product->id,
-                        'quantity' => $quantity,
-                        'unit_price' => $unitPrice,
-                        'discount' => $discount,
-                        'subtotal' => $lineSubtotal,
-                        'inventory_id' => $inventory->id,
-                    ];
-                }
-
-                $tax = 0;
-
-                $total = $saleSubtotal - $saleDiscount + $tax;
-
-                /*
+                    /*
                 * Create sale first.
                 */
-                do {
-                    $saleNumber = 'SALE-' .
+                    do {
+                        $saleNumber = 'SALE-' .
                         now()->format('YmdHis') .
                         '-' .
                         strtoupper(Str::random(5));
 
-                } while (Sale::where('sale_number', $saleNumber)->exists());
+                    } while (Sale::where('sale_number', $saleNumber)->exists());
 
-                $sale = Sale::create([
-                    'sale_number' => $saleNumber,
-                    'branch_id' => $validated['branch_id'],
-                    'store_id' => $validated['store_id'],
-                    'user_id' => Auth::id(),
+                    $sale = Sale::create([
+                        'sale_number'    => $saleNumber,
+                        'branch_id'      => $validated['branch_id'],
+                        'store_id'       => $validated['store_id'],
+                        'user_id'        => Auth::id(),
 
-                    'subtotal' => $saleSubtotal,
-                    'discount' => $saleDiscount,
-                    'tax' => $tax,
-                    'total' => $total,
+                        'subtotal'       => $saleSubtotal,
+                        'discount'       => $saleDiscount,
+                        'tax'            => $tax,
+                        'total'          => $total,
 
-                    'payment_method' => $validated['payment_method'],
-                    'status' => 'completed',
-                    'sold_at' => $validated['sale_date'],
-                ]);
+                        'payment_method' => $validated['payment_method'],
+                        'status'         => 'completed',
+                        'sold_at'        => $validated['sale_date'],
+                    ]);
 
-                /*
+                    /*
                 * Now create sale items, deduct stock,
                 * and create stock movements.
                 */
-                foreach ($itemsToCreate as $item) {
+                    foreach ($itemsToCreate as $item) {
 
-                    $sale->items()->create([
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'unit_price' => $item['unit_price'],
-                        'discount' => $item['discount'],
-                        'subtotal' => $item['subtotal'],
-                    ]);
+                        $sale->items()->create([
+                            'product_id' => $item['product_id'],
+                            'quantity'   => $item['quantity'],
+                            'unit_price' => $item['unit_price'],
+                            'discount'   => $item['discount'],
+                            'subtotal'   => $item['subtotal'],
+                        ]);
 
-                    $inventory = Inventory::where('id', $item['inventory_id'])
-                        ->lockForUpdate()
-                        ->firstOrFail();
+                        $inventory = Inventory::where('id', $item['inventory_id'])
+                            ->lockForUpdate()
+                            ->firstOrFail();
 
-                    $inventory->decrement(
-                        'quantity',
-                        $item['quantity']
-                    );
+                        $inventory->decrement(
+                            'quantity',
+                            $item['quantity']
+                        );
 
-                    StockMovement::create([
-                        'product_id' => $item['product_id'],
-                        'store_id' => $validated['store_id'],
-                        'user_id' => Auth::id(),
+                        StockMovement::create([
+                            'product_id'     => $item['product_id'],
+                            'store_id'       => $validated['store_id'],
+                            'user_id'        => Auth::id(),
 
-                        'type' => 'sale',
-                        'quantity' => -$item['quantity'],
+                            'type'           => 'sale',
+                            'quantity'       => -$item['quantity'],
 
-                        'reference_type' => Sale::class,
-                        'reference_id' => $sale->id,
+                            'reference_type' => Sale::class,
+                            'reference_id'   => $sale->id,
 
-                        'notes' => "Stock deducted for {$sale->sale_number}",
-                    ]);
-                }
+                            'notes'          => "Stock deducted for {$sale->sale_number}",
+                        ]);
+                    }
 
-                return $sale;
+                    return $sale;
+                });
             });
-            });
 
+            // dd($sale);
             return redirect()
-                ->route('sales.show', $sale)
-                ->with('success', "Sale {$sale->sale_number} completed successfully.");
+                ->route('sales.index')
+                ->with('success', "Sale completed successfully.");
+
+            // return redirect()
+            //     ->route('sales.show', $sale)
+            //     ->with('success', "Sale {$sale->sale_number} completed successfully.");
 
         } catch (\Throwable $e) {
 
