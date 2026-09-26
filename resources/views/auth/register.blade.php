@@ -95,8 +95,8 @@
 
                         <p class="text-center text-muted small mb-0">
                             Already have an account?
-                            {{-- <a href="{{ route('login') }}" class="text-decoration-none">Login</a> --}}
-                            <a href="" class="text-decoration-none">Login</a>
+                            <a href="{{ route('login') }}" class="text-decoration-none">Login</a>
+                            {{-- <a href="" class="text-decoration-none">Login</a> --}}
                         </p>
                     </form>
 

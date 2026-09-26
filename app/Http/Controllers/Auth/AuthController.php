@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -25,11 +24,11 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => 'The provided credentials are incorrect.',
             ]);
@@ -43,18 +42,24 @@ class AuthController extends Controller
     public function register(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'phone'    => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s]+$/',
+                'unique:users,phone',
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'role_id' => 1,
-            'status' => 'active',
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'phone'    => $validated['phone'],
+            'role_id'  => 1,
+            'status'   => 'active',
             'password' => Hash::make($validated['password']),
         ]);
 

@@ -11,7 +11,6 @@ A Laravel-based wholesale inventory and sales management system for managing pro
 - Automatic inventory deductions when a sale is completed
 - Stock movement tracking
 - Stock transfers between stores
-- Transfer status tracking
 - Low-stock monitoring
 - Sales and inventory summaries
 - Server-side validation
