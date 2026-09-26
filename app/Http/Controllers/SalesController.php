@@ -16,14 +16,55 @@ use Illuminate\Support\Str;
 class SalesController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $today        = Carbon::today();
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth   = Carbon::now()->endOfMonth();
 
-        // Base query: completed sales only
-        $completedSales = Sale::where('status', 'completed');
+        // Base query
+        $query = Sale::query();
+
+        // Search by sale number
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where('sale_number', 'like', "%{$search}%");
+        }
+
+        // Filter by branch
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
+        // Filter by store
+        if ($request->filled('store_id')) {
+            $query->where('store_id', $request->store_id);
+        }
+
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date from
+        if ($request->filled('date_from')) {
+            $query->whereDate('sold_at', '>=', $request->date_from);
+        }
+
+        // Filter by date to
+        if ($request->filled('date_to')) {
+            $query->whereDate('sold_at', '<=', $request->date_to);
+        }
+
+        // Completed sales based on the applied filters
+        $completedSales = (clone $query)
+            ->where('status', 'completed');
 
         // Sales today
         $salesToday = (clone $completedSales)
@@ -41,9 +82,19 @@ class SalesController extends Controller
         // Average completed sale value
         $averageSaleValue = (clone $completedSales)->avg('total') ?? 0;
 
-        // Retrieve sales for the table
-        $sales = Sale::with(['branch', 'store', 'user'])
+        // Retrieve filtered sales
+        $sales = (clone $query)
+            ->with(['branch', 'store', 'user'])
             ->latest('sold_at')
+            ->get();
+
+        // Filter options
+        $branches = Branch::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $stores = Store::where('is_active', true)
+            ->orderBy('name')
             ->get();
 
         return view('sales.index', compact(
@@ -51,7 +102,9 @@ class SalesController extends Controller
             'salesToday',
             'salesThisMonth',
             'totalTransactions',
-            'averageSaleValue'
+            'averageSaleValue',
+            'branches',
+            'stores'
         ));
     }
 

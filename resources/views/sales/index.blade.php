@@ -204,7 +204,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="11" class="text-center text-muted py-5">
+                                        <td colspan="12" class="text-center text-muted py-5">
                                             <i class="bi bi-receipt fs-2 d-block mb-2"></i>
                                             No sales found. Try adjusting your filters or create a new sale.
                                         </td>
