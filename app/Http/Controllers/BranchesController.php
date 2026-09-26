@@ -52,7 +52,7 @@ class BranchesController extends Controller
                 'string',
                 'max:20',
                 'regex:/^[0-9+()\s-]+$/',
-                'unique:branche,phone',
+                'unique:branches,phone',
             ],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
