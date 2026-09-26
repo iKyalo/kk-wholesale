@@ -97,20 +97,21 @@ class DashboardController extends Controller
         | or have not yet been completed.
         */
 
-        $activeTransferStatuses = [
+        $transferStatuses = [
             'pending',
             'approved',
             'in_transit',
+            'completed',
         ];
 
-        $pendingTransferQuery = StockTransfer::whereIn(
+        $transferQuery = StockTransfer::whereIn(
             'status',
-            $activeTransferStatuses
+            $transferStatuses
         );
 
-        $pendingTransfersCount = (clone $pendingTransferQuery)->count();
+        $transfersCount = (clone $transferQuery)->count();
 
-        $pendingTransfers = (clone $pendingTransferQuery)
+        $transfers = (clone $transferQuery)
             ->with([
                 'fromStore',
                 'toStore',
@@ -143,7 +144,7 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'lowStockCount',
-            'pendingTransfersCount',
+            'transfersCount',
             'totalProducts',
             'totalUnits',
             'totalInventoryValue',
@@ -155,7 +156,7 @@ class DashboardController extends Controller
             'salesThisMonth',
             'salesThisMonthTransactions',
             'lowStockProducts',
-            'pendingTransfers'
+            'transfers'
         ));
     }
 }

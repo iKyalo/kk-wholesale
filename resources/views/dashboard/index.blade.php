@@ -80,9 +80,9 @@
                         <div class="card-body">
                             <div class="d-flex align-items-start justify-content-between">
                                 <div>
-                                    <p class="text-muted text-uppercase small fw-semibold mb-1">Pending Stock Transfers</p>
-                                    <h4 class="fw-bold mb-1">{{ number_format($pendingTransfersCount ?? 0) }}</h4>
-                                    @if ($pendingTransfersCount > 0)
+                                    <p class="text-muted text-uppercase small fw-semibold mb-1">Stock Transfers</p>
+                                    <h4 class="fw-bold mb-1">{{ number_format($transfersCount ?? 0) }}</h4>
+                                    @if ($transfersCount > 0)
                                         <span class="badge text-bg-info">Awaiting action</span>
                                     @else
                                         <span class="badge text-bg-secondary">None pending</span>
@@ -237,10 +237,10 @@
                 </div>
             </div>
 
-            {{-- Pending Stock Transfers --}}
+            {{-- Stock Transfers --}}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 pt-3 d-flex align-items-center justify-content-between">
-                    <h2 class="h6 fw-bold mb-0">Pending Stock Transfers</h2>
+                    <h2 class="h6 fw-bold mb-0">Stock Transfers</h2>
                     <a href="{{ route('transfers.index') }}" class="btn btn-sm btn-outline-primary">View All
                         Transfers</a>
                 </div>
@@ -250,7 +250,7 @@
                             <thead>
                                 <tr class="text-muted small text-uppercase">
                                     <th>#</th>
-                                    <th>Transfer #</th>
+                                    {{-- <th>Transfer #</th> --}}
                                     <th>From</th>
                                     <th>To</th>
                                     <th>Items</th>
@@ -261,14 +261,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($pendingTransfers as $transfer)
+                                @forelse ($transfers as $transfer)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td class="fw-semibold">{{ $transfer->transfer_number }}</td>
+                                        {{-- <td class="fw-semibold">{{ $transfer->transfer_number }}</td> --}}
                                         <td>{{ $transfer->fromStore->name ?? 'N/A' }}</td>
                                         <td>{{ $transfer->toStore->name ?? 'N/A' }}</td>
                                         <td>{{ $transfer->items_count }}</td>
-                                        <td>{{ $transfer->requestedBy->name ?? 'N/A' }}</td>
+                                        <td>{{ $transfer->user->name ?? 'N/A' }}</td>
                                         <td>{{ $transfer->created_at->format('d M Y') }}</td>
                                         <td>
                                             @if ($transfer->status === 'pending')
@@ -289,7 +289,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted py-4">No pending stock transfers.
+                                        <td colspan="9" class="text-center text-muted py-4">No stock transfers.
                                         </td>
                                     </tr>
                                 @endforelse
