@@ -48,7 +48,7 @@ class AuthController extends Controller
                 'required',
                 'string',
                 'max:20',
-                'regex:/^[0-9+()\s]+$/',
+                'regex:/^[0-9+()\s-]+$/',
                 'unique:users,phone',
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

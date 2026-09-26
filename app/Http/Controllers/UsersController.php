@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Branch;
 use App\Models\Role;
 use App\Models\Store;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +19,8 @@ class UsersController extends Controller
     public function index(Request $request)
     {
         $roles = Role::orderBy('name')
-        ->get()
-        ->keyBy('id');
+            ->get()
+            ->keyBy('id');
 
         $branches = Branch::where('is_active', true)
             ->orderBy('name')
@@ -34,7 +33,7 @@ class UsersController extends Controller
         $users = User::query()
             ->with(['role', 'branches', 'stores'])
 
-            // Search by name, email, or phone
+        // Search by name, email, or phone
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
 
@@ -45,24 +44,24 @@ class UsersController extends Controller
                 });
             })
 
-            // Filter by role
+        // Filter by role
             ->when($request->filled('role'), function ($query) use ($request) {
                 $query->where('role_id', $request->role);
             })
 
-            // Filter by status
+        // Filter by status
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
 
-            // Filter by assigned branch
+        // Filter by assigned branch
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 $query->whereHas('branches', function ($q) use ($request) {
                     $q->where('branches.id', $request->branch_id);
                 });
             })
 
-            // Filter by assigned store
+        // Filter by assigned store
             ->when($request->filled('store_id'), function ($query) use ($request) {
                 $query->whereHas('stores', function ($q) use ($request) {
                     $q->where('stores.id', $request->store_id);
@@ -105,19 +104,25 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name'         => ['required', 'string', 'max:255'],
+            'email'        => ['required', 'email', 'max:255', 'unique:users,email'],
+            'phone'        => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s-]+$/',
+                'unique:users,phone',
+            ],
+            'password'     => ['required', 'string', 'min:8', 'confirmed'],
 
-            'role' => ['required', 'exists:roles,id'],
-            'status' => ['required', 'in:active,inactive'],
+            'role'         => ['required', 'exists:roles,id'],
+            'status'       => ['required', 'in:active,inactive'],
 
-            'branch_ids' => ['nullable', 'array'],
+            'branch_ids'   => ['nullable', 'array'],
             'branch_ids.*' => ['exists:branches,id'],
 
-            'store_ids' => ['nullable', 'array'],
-            'store_ids.*' => ['exists:stores,id'],
+            'store_ids'    => ['nullable', 'array'],
+            'store_ids.*'  => ['exists:stores,id'],
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -125,12 +130,12 @@ class UsersController extends Controller
             $role = Role::findOrFail($validated['role']);
 
             $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'phone'    => $validated['phone'],
                 'password' => Hash::make($validated['password']),
-                'role_id' => $role->id,
-                'status' => $validated['status'],
+                'role_id'  => $role->id,
+                'status'   => $validated['status'],
             ]);
 
             // Assign branches to Branch Managers.
@@ -171,7 +176,7 @@ class UsersController extends Controller
         $user->load(['branches', 'stores']);
 
         $branches = Branch::orderBy('name')->get();
-        $stores = Store::orderBy('name')->get();
+        $stores   = Store::orderBy('name')->get();
 
         $roles = Role::all();
 
@@ -188,45 +193,46 @@ class UsersController extends Controller
     {
         // dd($request);
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name'         => ['required', 'string', 'max:255'],
 
-            'email' => [
+            'email'        => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
 
-            'phone' => [
+            'phone'        => [
                 'required',
                 'string',
                 'max:20',
+                'regex:/^[0-9+()\s-]+$/',
                 Rule::unique('users', 'phone')->ignore($user->id),
             ],
 
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password'     => ['nullable', 'string', 'min:8', 'confirmed'],
 
-            'role' => ['required', 'exists:roles,id'],
-            'status' => ['required', 'in:active,inactive'],
+            'role'         => ['required', 'exists:roles,id'],
+            'status'       => ['required', 'in:active,inactive'],
 
-            'branch_ids' => ['nullable', 'array'],
+            'branch_ids'   => ['nullable', 'array'],
             'branch_ids.*' => ['exists:branches,id'],
 
-            'store_ids' => ['nullable', 'array'],
-            'store_ids.*' => ['exists:stores,id'],
+            'store_ids'    => ['nullable', 'array'],
+            'store_ids.*'  => ['exists:stores,id'],
         ]);
 
         DB::transaction(function () use ($validated, $user) {
             $data = [
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'name'    => $validated['name'],
+                'email'   => $validated['email'],
+                'phone'   => $validated['phone'],
                 'role_id' => $validated['role'],
-                'status' => $validated['status'],
+                'status'  => $validated['status'],
             ];
 
             // Only update password if provided.
-            if (!empty($validated['password'])) {
+            if (! empty($validated['password'])) {
                 $data['password'] = Hash::make(
                     $validated['password']
                 );
