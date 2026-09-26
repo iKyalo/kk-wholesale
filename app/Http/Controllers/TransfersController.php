@@ -1,14 +1,13 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use App\Models\Store;
-use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -122,9 +121,9 @@ class TransfersController extends Controller
 
     public function create()
     {
-        $sales = Sale::all();
+        $sales    = Sale::all();
         $branches = Branch::all();
-        $stores = Store::all();
+        $stores   = Store::all();
 
         $products = Product::where('is_active', true)
             ->with(['inventories' => function ($query) {
@@ -160,31 +159,31 @@ class TransfersController extends Controller
     {
         // dd($request);
         $validated = $request->validate([
-            'from_store_id' => [
+            'from_store_id'      => [
                 'required',
                 'integer',
                 'exists:stores,id',
                 'different:to_store_id',
             ],
 
-            'to_store_id' => [
+            'to_store_id'        => [
                 'required',
                 'integer',
                 'exists:stores,id',
             ],
 
-            'transfer_date' => [
+            'transfer_date'      => [
                 'required',
                 'date',
             ],
 
-            'notes' => [
+            'notes'              => [
                 'nullable',
                 'string',
                 'max:1000',
             ],
 
-            'items' => [
+            'items'              => [
                 'required',
                 'array',
                 'min:1',
@@ -196,7 +195,7 @@ class TransfersController extends Controller
                 'exists:products,id',
             ],
 
-            'items.*.quantity' => [
+            'items.*.quantity'   => [
                 'required',
                 'integer',
                 'min:1',
@@ -208,24 +207,24 @@ class TransfersController extends Controller
             $transfer = StockTransfer::create([
                 'transfer_number' => null,
 
-                'from_branch_id' => Store::findOrFail(
+                'from_branch_id'  => Store::findOrFail(
                     $validated['from_store_id']
                 )->branch_id,
 
-                'to_branch_id' => Store::findOrFail(
+                'to_branch_id'    => Store::findOrFail(
                     $validated['to_store_id']
                 )->branch_id,
 
-                'from_store_id' => $validated['from_store_id'],
-                'to_store_id' => $validated['to_store_id'],
+                'from_store_id'   => $validated['from_store_id'],
+                'to_store_id'     => $validated['to_store_id'],
 
-                'transfered_at' => $validated['transfer_date'],
+                'transfered_at'   => $validated['transfer_date'],
 
-                'notes' => $validated['notes'] ?? null,
+                'notes'           => $validated['notes'] ?? null,
 
-                'status' => 'completed',
+                'status'          => 'completed',
 
-                'user_id' => Auth::id(),
+                'user_id'         => Auth::id(),
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -236,7 +235,7 @@ class TransfersController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$sourceInventory) {
+                if (! $sourceInventory) {
                     abort(
                         422,
                         'No inventory record exists for the selected product at the source store.'
@@ -253,8 +252,8 @@ class TransfersController extends Controller
                 // Create transfer item
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
+                    'product_id'        => $item['product_id'],
+                    'quantity'          => $item['quantity'],
                 ]);
 
                 // Remove stock from source store
@@ -276,9 +275,9 @@ class TransfersController extends Controller
                     );
                 } else {
                     Inventory::create([
-                        'store_id' => $validated['to_store_id'],
+                        'store_id'   => $validated['to_store_id'],
                         'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
+                        'quantity'   => $item['quantity'],
                     ]);
                 }
             }
@@ -303,7 +302,7 @@ class TransfersController extends Controller
 
     public function edit(StockTransfer $transfer)
     {
-        $stores = Store::all();
+        $stores   = Store::all();
         $products = Product::where('is_active', true)->get();
 
         $transfer->load('items.product');
@@ -324,7 +323,7 @@ class TransfersController extends Controller
                 'exists:stores,id',
                 'different:to_store_id',
             ],
-            'to_store_id' => [
+            'to_store_id'   => [
                 'required',
                 'integer',
                 'exists:stores,id',
@@ -333,7 +332,7 @@ class TransfersController extends Controller
                 'required',
                 'date',
             ],
-            'notes' => [
+            'notes'         => [
                 'nullable',
                 'string',
                 'max:1000',

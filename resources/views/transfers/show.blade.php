@@ -9,7 +9,7 @@
                     <h1 class="h3 fw-bold mb-0">{{ $transfer->transfer_number }}</h1>
                     <p class="text-muted small mb-0">
                         {{ $transfer->created_at->format('d M Y') }} &middot; Requested by
-                        {{ $transfer->requestedBy->name ?? '—' }}
+                        {{ $transfer->user->name ?? '—' }}
                     </p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
@@ -100,9 +100,7 @@
                                 <tr class="text-muted small text-uppercase">
                                     <th>Product</th>
                                     <th>SKU</th>
-                                    <th class="text-end">Quantity Requested</th>
-                                    <th class="text-end">Quantity Dispatched</th>
-                                    <th class="text-end">Quantity Received</th>
+                                    <th class="text-end">Quantity</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,14 +109,7 @@
                                         <td class="fw-semibold">{{ $item->product->name ?? '—' }}</td>
                                         <td>{{ $item->product->sku ?? '—' }}</td>
                                         <td class="text-end">{{ number_format($item->quantity) }}</td>
-                                        <td class="text-end">
-                                            {{ $item->quantity_dispatched !== null ? number_format($item->quantity_dispatched) : '—' }}
-                                        </td>
-                                        <td class="text-end">
-                                            {{ $item->quantity_received !== null ? number_format($item->quantity_received) : '—' }}
-                                        </td>
-                                    </tr>
-                                @empty
+                                    @empty
                                     <tr>
                                         <td colspan="5" class="text-center text-muted py-4">No items on this transfer.
                                         </td>
@@ -133,7 +124,7 @@
             <div class="row g-4">
 
                 {{-- Transfer Timeline --}}
-                <div class="col-lg-7">
+                {{-- <div class="col-lg-7">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-0 pt-3">
                             <h2 class="h6 fw-bold mb-0">Transfer Timeline</h2>
@@ -164,7 +155,7 @@
                             @endforelse
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 {{-- Additional Information --}}
                 <div class="col-lg-5">
