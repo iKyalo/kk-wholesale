@@ -47,7 +47,13 @@ class BranchesController extends Controller
             'code'      => ['required', 'string', 'max:50', 'unique:branches,code'],
             'location'  => ['required', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
-            'phone'     => ['nullable', 'string', 'max:20'],
+            'phone'     => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s-]+$/',
+                'unique:branche,phone',
+            ],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
         ]);
@@ -118,7 +124,13 @@ class BranchesController extends Controller
             ],
             'location'  => ['required', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
-            'phone'     => ['nullable', 'string', 'max:20'],
+            'phone'     => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s-]+$/',
+                Rule::unique('branches', 'phone')->ignore($branch->id),
+            ],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
         ]);

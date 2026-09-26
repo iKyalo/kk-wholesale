@@ -64,7 +64,13 @@ class StoresController extends Controller
             'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'is_active' => ['required', 'boolean'],
             'location'  => ['required', 'string', 'max:255'],
-            'phone'     => ['nullable', 'string', 'max:20'],
+            'phone'     => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s-]+$/',
+                'unique:stores,phone',
+            ],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
         ]);
@@ -128,7 +134,13 @@ class StoresController extends Controller
             'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'is_active' => ['required', 'boolean'],
             'location'  => ['required', 'string', 'max:255'],
-            'phone'     => ['nullable', 'string', 'max:20'],
+            'phone'     => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^[0-9+()\s-]+$/',
+                Rule::unique('stores', 'phone')->ignore($store->id),
+            ],
             'email'     => ['nullable', 'email', 'max:255'],
             'address'   => ['nullable', 'string', 'max:1000'],
         ]);
