@@ -68,7 +68,9 @@
                             <tbody>
                                 @forelse ($branches as $branch)
                                     <tr>
-                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td class="fw-semibold">
+                                            {{ ($branches->currentPage() - 1) * $branches->perPage() + $loop->iteration }}
+                                        </td>
                                         <td class="fw-semibold">{{ $branch->name }}</td>
                                         <td>{{ $branch->code }}</td>
                                         <td>{{ $branch->location }}</td>

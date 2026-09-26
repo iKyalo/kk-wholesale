@@ -117,7 +117,7 @@
                 @endif
 
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
                     <td class="fw-semibold">{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone ?? '—' }}</td>

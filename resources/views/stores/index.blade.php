@@ -80,7 +80,8 @@
                             <tbody>
                                 @forelse ($stores as $store)
                                     <tr>
-                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td class="fw-semibold">
+                                            {{ ($stores->currentPage() - 1) * $stores->perPage() + $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $store->name }}</td>
                                         <td>{{ $store->code }}</td>
                                         <td>{{ $store->branch->name ?? '—' }}</td>

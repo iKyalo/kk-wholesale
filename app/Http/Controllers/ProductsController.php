@@ -37,7 +37,8 @@ class ProductsController extends Controller
         $products = $query
             ->withSum('inventories as total_stock', 'quantity')
             ->latest()
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         // Summary cards
         $totalProducts = Product::count();

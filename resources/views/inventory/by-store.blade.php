@@ -140,7 +140,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center text-muted py-5">
+                                            <td colspan="10" class="text-center text-muted py-5">
                                                 <i class="bi bi-boxes fs-2 d-block mb-2"></i>
                                                 No inventory records found for this store.
                                             </td>
