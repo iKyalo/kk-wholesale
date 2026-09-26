@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,5 +47,25 @@ class Store extends Model
     public function sales()
     {
         return $this->hasMany(Sale::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    public function stockTransfers()
+    {
+        return $this->hasMany(StockTransfer::class);
+    }
+
+    public function outgoingTransfers()
+    {
+        return $this->hasMany(StockTransfer::class, 'from_store_id');
+    }
+
+    public function incomingTransfers()
+    {
+        return $this->hasMany(StockTransfer::class, 'to_store_id');
     }
 }

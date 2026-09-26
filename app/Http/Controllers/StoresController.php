@@ -86,7 +86,24 @@ class StoresController extends Controller
     {
         $store->load([
             'branch',
+
             'inventories.product',
+
+            'sales.user',
+
+            'outgoingTransfers.user',
+            'outgoingTransfers.fromStore.branch',
+            'outgoingTransfers.toStore.branch',
+            'outgoingTransfers.fromBranch',
+            'outgoingTransfers.toBranch',
+            'outgoingTransfers.items.product',
+
+            'incomingTransfers.user',
+            'incomingTransfers.fromStore.branch',
+            'incomingTransfers.toStore.branch',
+            'incomingTransfers.fromBranch',
+            'incomingTransfers.toBranch',
+            'incomingTransfers.items.product',
         ]);
 
         $store->users_count = $store->users()->count();
@@ -99,7 +116,7 @@ class StoresController extends Controller
         $store->total_units = $store->inventories->sum('quantity');
 
         $store->inventory_value = $store->inventories->sum(function ($inventory) {
-            return $inventory->quantity * $inventory->cost_price;
+            return $inventory->quantity * $inventory->product->cost_price;
         });
 
         $store->sales_today = $store->sales()
@@ -111,7 +128,32 @@ class StoresController extends Controller
             ->whereMonth('created_at', now()->month)
             ->sum('total');
 
-        return view('stores.show', compact('store'));
+        $storeInventory = $store->inventories
+            ->filter(fn($inventory) => $inventory->quantity > 0)
+            ->sortBy(fn($inventory) => $inventory->product->name);
+
+        $sales = $store->sales
+            ->sortByDesc('created_at');
+
+        $stockTransfers = $store->outgoingTransfers
+            ->map(function ($transfer) {
+                $transfer->direction = 'Outgoing';
+                return $transfer;
+            })
+            ->concat(
+                $store->incomingTransfers->map(function ($transfer) {
+                    $transfer->direction = 'Incoming';
+                    return $transfer;
+                })
+            )
+            ->sortByDesc('created_at');
+
+        return view('stores.show', compact(
+            'store',
+            'storeInventory',
+            'sales',
+            'stockTransfers'
+        ));
     }
 
     public function edit(Store $store)
