@@ -1142,7 +1142,7 @@ class UsersControllerTest extends TestCase
             ->assertSessionHas('success', 'User deleted successfully.');
 
         $this->assertDatabaseMissing('users', ['id' => $target->id]); // A5: assertSoftDeleted if SoftDeletes
-        $this->assertDatabaseMissing('branch_user', ['user_id' => $target->id]);
+        $this->assertDatabaseMissing('user_branches', ['user_id' => $target->id]);
         $this->assertModelExists($branch);
     }
 
