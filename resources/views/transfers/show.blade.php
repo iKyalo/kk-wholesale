@@ -98,6 +98,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Product</th>
                                     <th>SKU</th>
                                     <th class="text-end">Quantity</th>
@@ -106,6 +107,7 @@
                             <tbody>
                                 @forelse ($transfer->items as $item)
                                     <tr>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td class="fw-semibold">{{ $item->product->name ?? '—' }}</td>
                                         <td>{{ $item->product->sku ?? '—' }}</td>
                                         <td class="text-end">{{ number_format($item->quantity) }}</td>

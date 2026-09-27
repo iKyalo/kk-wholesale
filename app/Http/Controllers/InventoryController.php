@@ -162,9 +162,23 @@ class InventoryController extends Controller
 
     public function show(Inventory $inventory)
     {
-        $stockMovements = [];
+        $inventory->load([
+            'product',
+            'store.branch',
+        ]);
 
-        return view('inventory.show', compact('inventory', 'stockMovements'));
+        $stockMovements = StockMovement::with([
+            'performedBy',
+        ])
+            ->where('store_id', $inventory->store_id)
+            ->where('product_id', $inventory->product_id)
+            ->latest()
+            ->get();
+
+        return view('inventory.show', compact(
+            'inventory',
+            'stockMovements'
+        ));
     }
 
     public function editStock()

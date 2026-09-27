@@ -40,6 +40,11 @@ class StockMovement extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function performedBy()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function reference()
     {
         return $this->morphTo();

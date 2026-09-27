@@ -156,6 +156,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-muted small text-uppercase">
+                                    <th>#</th>
                                     <th>Branch</th>
                                     <th>Store</th>
                                     <th>Quantity Available</th>
@@ -166,6 +167,7 @@
                             <tbody>
                                 @forelse ($storeInventory as $inventory)
                                     <tr>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td>{{ $inventory->store->branch->name ?? '—' }}</td>
                                         <td class="fw-semibold">{{ $inventory->store->name ?? '—' }}</td>
                                         <td>{{ number_format($inventory->quantity) }}</td>
@@ -182,7 +184,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-4">
+                                        <td colspan="6" class="text-center text-muted py-4">
                                             No inventory records found for this product yet.
                                         </td>
                                     </tr>
