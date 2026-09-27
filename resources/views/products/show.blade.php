@@ -193,6 +193,89 @@
                 </div>
             </div>
 
+            {{-- Stock History --}}
+
+            <div class="card shadow-sm mt-4 mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Stock History
+                    </h5>
+                </div>
+
+                <div class="card-body p-0">
+                    @if ($stockHistory->count())
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Branch</th>
+                                        <th>Store</th>
+                                        <th>Movement</th>
+                                        <th>Quantity</th>
+                                        <th>User</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($stockHistory as $movement)
+                                        <tr>
+                                            <td>
+                                                {{ $loop->iteration }}
+                                            </td>
+
+                                            <td>
+                                                {{ $movement->created_at->format('d M Y H:i') }}
+                                            </td>
+
+
+                                            <td>
+                                                {{ $movement->store?->branch?->name ?? '—' }}
+                                            </td>
+
+                                            <td>
+                                                {{ $movement->store?->name ?? '—' }}
+                                            </td>
+
+                                            <td>
+                                                {{ ucwords(str_replace('_', ' ', $movement->type)) }}
+                                            </td>
+
+                                            <td>
+                                                @if ($movement->quantity > 0)
+                                                    <span class="text-success fw-bold">
+                                                        +{{ $movement->quantity }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-danger fw-bold">
+                                                        {{ $movement->quantity }}
+                                                    </span>
+                                                @endif
+                                            </td>
+
+                                            <td>
+                                                {{ $movement->user?->name ?? '—' }}
+                                            </td>
+
+                                            <td>
+                                                {{ $movement->reference->sale_number ?? '—' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="p-4 text-center text-muted">
+                            No stock movement history found for this product.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
         </div>
     </div>
 @endsection

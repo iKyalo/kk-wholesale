@@ -1,23 +1,21 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Inventory;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\Store;
 use Illuminate\Http\Request;
-use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-
 
 class InventoryController extends Controller
 {
     public function index()
     {
         $branches = Branch::all();
-        $stores = Store::all();
+        $stores   = Store::all();
 
         /*
         |--------------------------------------------------------------------------
@@ -162,19 +160,19 @@ class InventoryController extends Controller
         ));
     }
 
-    public function show(Inventory $inventory) 
+    public function show(Inventory $inventory)
     {
         $stockMovements = [];
 
         return view('inventory.show', compact('inventory', 'stockMovements'));
     }
 
-    public function editStock() 
+    public function editStock()
     {
-        $branches = Branch::all();
-        $stores = Store::all();
+        $branches    = Branch::all();
+        $stores      = Store::all();
         $inventories = Inventory::all();
-        $products = Product::all();
+        $products    = Product::all();
 
         return view('inventory.update-stock', compact('branches', 'stores', 'inventories', 'products'));
     }
@@ -182,14 +180,14 @@ class InventoryController extends Controller
     public function updateStock(Request $request)
     {
         $validated = $request->validate([
-            'inventory_id' => ['nullable', 'integer', 'exists:inventories,id'],
-            'branch_id' => ['required', 'integer', 'exists:branches,id'],
-            'store_id' => ['required', 'integer', 'exists:stores,id'],
-            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'inventory_id'    => ['nullable', 'integer', 'exists:inventories,id'],
+            'branch_id'       => ['required', 'integer', 'exists:branches,id'],
+            'store_id'        => ['required', 'integer', 'exists:stores,id'],
+            'product_id'      => ['required', 'integer', 'exists:products,id'],
             'adjustment_type' => ['required', 'in:stock_in,stock_out,set_exact'],
-            'quantity' => ['required', 'integer', 'min:0'],
-            'reference' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
+            'quantity'        => ['required', 'integer', 'min:0'],
+            'reference'       => ['nullable', 'string', 'max:255'],
+            'notes'           => ['nullable', 'string'],
         ]);
 
         // Make sure the selected store belongs to the selected branch.
@@ -197,7 +195,7 @@ class InventoryController extends Controller
             ->where('branch_id', $validated['branch_id'])
             ->first();
 
-        if (!$store) {
+        if (! $store) {
             throw ValidationException::withMessages([
                 'store_id' => 'The selected store does not belong to the selected branch.',
             ]);
@@ -212,7 +210,7 @@ class InventoryController extends Controller
             * Otherwise find the inventory record using the
             * branch, store and product combination.
             */
-            if (!empty($validated['inventory_id'])) {
+            if (! empty($validated['inventory_id'])) {
 
                 $inventory = Inventory::where('id', $validated['inventory_id'])
                     ->lockForUpdate()
@@ -238,12 +236,12 @@ class InventoryController extends Controller
                     ->first();
 
                 // Create inventory record if one does not exist.
-                if (!$inventory) {
+                if (! $inventory) {
                     $inventory = Inventory::create([
-                        'branch_id' => $validated['branch_id'],
-                        'store_id' => $validated['store_id'],
+                        'branch_id'  => $validated['branch_id'],
+                        'store_id'   => $validated['store_id'],
                         'product_id' => $validated['product_id'],
-                        'quantity' => 0,
+                        'quantity'   => 0,
                     ]);
 
                     // Lock the newly created record.
@@ -294,22 +292,23 @@ class InventoryController extends Controller
             * Record the stock movement.
             */
             StockMovement::create([
-                'branch_id' => $inventory->branch_id,
-                'product_id' => $inventory->product_id,
-                'user_id' => $request->user()->id,
-                'type' => $validated['adjustment_type'],
-                'quantity' => $validated['adjustment_type'] === 'stock_out'
+                'branch_id'       => $inventory->branch_id,
+                'store_id'        => $inventory->store_id,
+                'product_id'      => $inventory->product_id,
+                'user_id'         => $request->user()->id,
+                'type'            => $validated['adjustment_type'],
+                'quantity'        => $validated['adjustment_type'] === 'stock_out'
                     ? -$validated['quantity']
                     : (
-                        $validated['adjustment_type'] === 'stock_in'
-                            ? $validated['quantity']
-                            : $quantityAfter - $quantityBefore
-                    ),
+                    $validated['adjustment_type'] === 'stock_in'
+                        ? $validated['quantity']
+                        : $quantityAfter - $quantityBefore
+                ),
                 'quantity_before' => $quantityBefore,
-                'quantity_after' => $quantityAfter,
-                'reference_type' => $validated['reference'] ? 'manual_adjustment' : null,
-                'reference_id' => null,
-                'notes' => $validated['notes'] ?? null,
+                'quantity_after'  => $quantityAfter,
+                'reference_type'  => null,
+                'reference_id'    => null,
+                'notes'           => $validated['notes'] ?? null,
             ]);
 
             return redirect()
@@ -324,20 +323,20 @@ class InventoryController extends Controller
 
         $stores = Store::all();
 
-        $store = null;
+        $store       = null;
         $inventories = collect();
 
-        $storeTotalProducts = 0;
-        $storeTotalUnits = 0;
-        $storeLowStockCount = 0;
+        $storeTotalProducts   = 0;
+        $storeTotalUnits      = 0;
+        $storeLowStockCount   = 0;
         $storeOutOfStockCount = 0;
-        $storeInventoryValue = 0;
+        $storeInventoryValue  = 0;
 
         if ($request->filled('store_id')) {
 
             $request->validate([
                 'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
-                'store_id' => ['required', 'integer', 'exists:stores,id'],
+                'store_id'  => ['required', 'integer', 'exists:stores,id'],
             ]);
 
             $store = Store::with('branch')->findOrFail($request->store_id);
@@ -362,7 +361,7 @@ class InventoryController extends Controller
                 $minimumStockLevel = $inventory->product->minimum_stock_level ?? 0;
 
                 return $inventory->quantity > 0 &&
-                    $inventory->quantity <= $minimumStockLevel;
+                $inventory->quantity <= $minimumStockLevel;
             })->count();
 
             $storeOutOfStockCount = $inventories->filter(function ($inventory) {

@@ -112,6 +112,9 @@ class ProductsController extends Controller
     {
         $product->load([
             'inventories.store.branch',
+
+            'stockMovements.store.branch',
+            'stockMovements.user',
         ]);
 
         $storeInventory = $product->inventories;
@@ -135,13 +138,18 @@ class ProductsController extends Controller
         // Total inventory value based on product cost price
         $totalInventoryValue = $totalUnits * $product->cost_price;
 
+        // Product stock history
+        $stockHistory = $product->stockMovements
+            ->sortByDesc('created_at');
+
         return view('products.show', compact(
             'product',
             'storeInventory',
             'totalUnits',
             'branchesHoldingStock',
             'storesHoldingStock',
-            'totalInventoryValue'
+            'totalInventoryValue',
+            'stockHistory'
         ));
     }
 

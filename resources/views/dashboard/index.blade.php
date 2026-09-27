@@ -83,9 +83,7 @@
                                     <p class="text-muted text-uppercase small fw-semibold mb-1">Stock Transfers</p>
                                     <h4 class="fw-bold mb-1">{{ number_format($transfersCount ?? 0) }}</h4>
                                     @if ($transfersCount > 0)
-                                        <span class="badge text-bg-info">Awaiting action</span>
-                                    @else
-                                        <span class="badge text-bg-secondary">None pending</span>
+                                        <span class="badge text-bg-success">Completed</span>
                                     @endif
                                 </div>
                                 <span

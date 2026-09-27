@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -29,19 +28,19 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'cost_price' => 'decimal:2',
+            'cost_price'    => 'decimal:2',
             'selling_price' => 'decimal:2',
-            'is_active' => 'boolean',
+            'is_active'     => 'boolean',
         ];
     }
 
     protected function imageUrl(): Attribute
     {
         return Attribute::get(
-            fn ($value, $attributes) =>
-                !empty($attributes['image_url'])
-                    ? Storage::url($attributes['image_url'])
-                    : null
+            fn($value, $attributes) =>
+            ! empty($attributes['image_url'])
+                ? Storage::url($attributes['image_url'])
+                : null
         );
     }
 
@@ -53,5 +52,10 @@ class Product extends Model
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
     }
 }
