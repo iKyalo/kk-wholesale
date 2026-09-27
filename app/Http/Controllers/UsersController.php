@@ -191,9 +191,12 @@ class UsersController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        // dd($request);
         $validated = $request->validate([
-            'name'         => ['required', 'string', 'max:255'],
+            'name'         => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
             'email'        => [
                 'required',
@@ -210,16 +213,40 @@ class UsersController extends Controller
                 Rule::unique('users', 'phone')->ignore($user->id),
             ],
 
-            'password'     => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password'     => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
 
-            'role'         => ['required', 'exists:roles,id'],
-            'status'       => ['required', 'in:active,inactive'],
+            'role'         => [
+                'required',
+                'exists:roles,id',
+            ],
 
-            'branch_ids'   => ['nullable', 'array'],
-            'branch_ids.*' => ['exists:branches,id'],
+            'status'       => [
+                'required',
+                'in:active,inactive',
+            ],
 
-            'store_ids'    => ['nullable', 'array'],
-            'store_ids.*'  => ['exists:stores,id'],
+            'branch_ids'   => [
+                'nullable',
+                'array',
+            ],
+
+            'branch_ids.*' => [
+                'exists:branches,id',
+            ],
+
+            'store_ids'    => [
+                'nullable',
+                'array',
+            ],
+
+            'store_ids.*'  => [
+                'exists:stores,id',
+            ],
         ]);
 
         DB::transaction(function () use ($validated, $user) {
@@ -233,23 +260,24 @@ class UsersController extends Controller
 
             // Only update password if provided.
             if (! empty($validated['password'])) {
-                $data['password'] = Hash::make(
-                    $validated['password']
-                );
+                $data['password'] = Hash::make($validated['password']);
             }
 
             $user->update($data);
 
-            // Sync branch assignments.
+            // Use role_id, not the role relationship.
+            $roleId = (int) $user->role_id;
+
+            // Branch managers only.
             $user->branches()->sync(
-                $user->role === 2
+                $roleId === 2
                     ? ($validated['branch_ids'] ?? [])
                     : []
             );
 
-            // Sync store assignments.
+            // Store managers only.
             $user->stores()->sync(
-                $user->role === 3
+                $roleId === 3
                     ? ($validated['store_ids'] ?? [])
                     : []
             );
