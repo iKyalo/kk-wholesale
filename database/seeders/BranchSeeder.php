@@ -11,12 +11,14 @@ class BranchSeeder extends Seeder
         $branches = [
             [
                 'name'     => 'Branch 1',
+                'code'     => 'BR1',
                 'location' => 'Nairobi CBD',
                 'phone'    => '0711000001',
                 'email'    => 'branch1@kkwholesale.co.ke',
             ],
             [
                 'name'     => 'Branch 2',
+                'code'     => 'BR2',
                 'location' => 'Mombasa',
                 'phone'    => '0711000002',
                 'email'    => 'branch2@kkwholesale.co.ke',

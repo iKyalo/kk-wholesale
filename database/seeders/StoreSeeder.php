@@ -13,6 +13,7 @@ class StoreSeeder extends Seeder
             [
                 'branch'   => 'Branch 1',
                 'name'     => 'Store 1',
+                'code'     => 'ST1',
                 'location' => 'Industrial Area',
                 'phone'    => '0711000001',
                 'email'    => 'store1@kkwholesale.co.ke',
@@ -22,6 +23,7 @@ class StoreSeeder extends Seeder
             [
                 'branch'   => 'Branch 2',
                 'name'     => 'Store 2',
+                'code'     => 'ST2',
                 'location' => 'Mombasa CBD',
                 'phone'    => '0711000002',
                 'email'    => 'store2@kkwholesale.co.ke',
@@ -29,6 +31,7 @@ class StoreSeeder extends Seeder
             [
                 'branch'   => 'Branch 2',
                 'name'     => 'Store 3',
+                'code'     => 'ST3',
                 'location' => 'Changamwe',
                 'phone'    => '0711000003',
                 'email'    => 'store3@kkwholesale.co.ke',
@@ -51,6 +54,9 @@ class StoreSeeder extends Seeder
                 ],
                 [
                     'location'   => $store['location'],
+                    'code'       => $store['code'],
+                    'phone'      => $store['phone'],
+                    'email'      => $store['email'],
                     'updated_at' => now(),
                     'created_at' => now(),
                 ]
