@@ -28,9 +28,17 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'email' => 'No account was found with this email address.',
+            ]);
+        }
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'The provided credentials are incorrect.',
+                'password' => 'The password is incorrect.',
             ]);
         }
 
